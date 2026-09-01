@@ -45,6 +45,14 @@ for u in /sys/class/udc/*/; do
 done
 say "usb0 mac=$(cat /sys/class/net/usb0/address 2>/dev/null) operstate=$(cat /sys/class/net/usb0/operstate 2>/dev/null) carrier=$(cat /sys/class/net/usb0/carrier 2>/dev/null)"
 say ""
+say "########## dr_mode VERIFICATION (config.txt fix, 2026-09-01) ##########"
+say "expect dr_mode=peripheral; 'otg' means the config.txt edit did not take"
+for f in $(find /proc/device-tree -name dr_mode 2>/dev/null); do
+  say "  $f = $(tr -d '\0' < "$f" 2>/dev/null)"
+done
+say "  /proc/cmdline: $(cat /proc/cmdline 2>/dev/null)"
+say "  config.txt [all] dwc2: $(grep -n 'dtoverlay=dwc2' $B/config.txt 2>/dev/null | tr '\n' ' ')"
+say ""
 say "########## dmesg BEFORE ##########"
 say "$(dwc | tail -40)"
 say ""

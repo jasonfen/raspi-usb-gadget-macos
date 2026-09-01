@@ -37,7 +37,51 @@ Pi modes, for reference:
   upstream. Useless here: the Pi has no upstream.
 - **client** — Pi DHCPs from our gateway. This is what we want.
 
-## ROOT CAUSE (confirmed): the host->device path silently drops everything
+## The controller was never in peripheral mode (found 2026-09-01)
+
+Every measurement below was taken with dwc2 in **otg** mode, not peripheral. In
+`config.txt`, the `rpi-usb-gadget` install appended:
+
+```
+[pi5]
+dtoverlay=spi0-2cs
+#dtoverlay=disable-wifidtoverlay=dwc2,dr_mode=peripheral
+```
+
+Two independent failures in one line:
+
+1. **It is inside a comment.** The file had no trailing newline, so the append glued
+   `dtoverlay=dwc2,dr_mode=peripheral` onto `#dtoverlay=disable-wifi`. Confirmed by
+   hexdump: a single `\n` at EOF, none before the appended text.
+2. **It is under `[pi5]`.** A Zero 2 W is `[pi02]`. Conditional filters persist until
+   the next filter, so an append at EOF lands in whatever section happens to be last.
+
+The only dwc2 line that actually applied was `dtoverlay=dwc2` under `[all]`, which
+defaults `dr_mode` to **otg**. dmesg agrees: `DWC OTG Controller`, and nothing
+declaring peripheral mode. It still enumerates, because ID floats to B-device — which
+is exactly why this went unnoticed for the whole investigation.
+
+Fixed on the card: `[all]` now carries `dtoverlay=dwc2,dr_mode=peripheral`, the
+comment is restored, and the file ends with a newline. Backup in
+`boot-backup/config.txt.pre-drmode-fix`.
+
+**This is a third upstream packaging bug**, and worse than the other two: the installer
+appends to `config.txt` without a newline guard and without forcing an `[all]` filter.
+Any image whose `config.txt` ends in a comment or a model filter gets a silently
+inert gadget.
+
+### Everything below is PENDING RETEST
+
+> The host->device analysis that follows was measured against a controller running the
+> OTG state machine instead of hard peripheral mode. The counters are real, but the
+> conclusion drawn from them — that macOS queues OUT transfers it never delivers — now
+> rests on an untested premise. Same class of error as the `Opkts` trap: the
+> instrument was fine, the setup underneath it was not.
+>
+> The upstream comments on #27 and PR #31 were filed under this premise and need a
+> correction once the retest lands.
+
+## Superseded: the host->device path silently drops everything
 
 Full 6-minute capture, counters from both sides of one session:
 
