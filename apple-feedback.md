@@ -152,3 +152,19 @@ both, and the device-side evidence above is unaffected by any host-side routing 
   the gadget interface and 29/60 outbound on Wi-Fi as a control
 - `opkts-161-session9.txt` — the counter freezing at 161 with routes verified present
 - Sysdiagnose captured while the interface is wedged
+
+### Capturing the sysdiagnose
+
+It must be taken while `Opkts` is frozen, not before or after. With the device attached
+and the counter confirmed stuck at 161:
+
+```sh
+sudo sysdiagnose        # ~5 min; writes /var/tmp/sysdiagnose_*.tar.gz
+```
+
+The keyboard shortcut is Control-Option-Command-Shift-period, but the command is more
+reliable and does not depend on focus. Confirm the wedge first:
+
+```sh
+netstat -I en7 -b | awk 'NR==2{print "Opkts="$8}'   # must read 161
+```
