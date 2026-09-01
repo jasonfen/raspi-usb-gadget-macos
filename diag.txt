@@ -1,0 +1,116 @@
+===== rpi diag Wed 19 Aug 05:25:45 UTC 2026 =====
+boot partition: /boot/firmware
+--- uname ---
+Linux pwnagernchi 6.18.39+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.18.39-1+rpt1 (2026-07-29) aarch64 GNU/Linux
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+
+########## THE KEY QUESTION: IS NCM AVAILABLE? ##########
+--- modinfo g_ncm ---
+modinfo: ERROR: Module g_ncm not found.
+--- modinfo g_ether ---
+filename:       /lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_ether.ko.xz
+license:        GPL
+author:         David Brownell, Benedikt Spanger
+description:    RNDIS/Ethernet Gadget
+srcversion:     24B3E60B7619A1EC2ED4CB0
+depends:        libcomposite,u_ether,usb_f_rndis
+--- usb_f_ncm module ---
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_ncm.ko.xz
+--- all gadget function modules ---
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/u_audio.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/u_ether.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_acm.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_ecm.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_ecm_subset.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_eem.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_fs.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_hid.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_midi2.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_midi.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_ncm.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_obex.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_printer.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_rndis.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_serial.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_ss_lb.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_uac1.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_uac2.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/usb_f_uvc.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/function/u_serial.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_acm_ms.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/gadgetfs.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_audio.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_cdc.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_ether.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_hid.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_mass_storage.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_midi.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_multi.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_printer.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_serial.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_webcam.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/legacy/g_zero.ko.xz
+/lib/modules/6.18.39+rpt-rpi-v8/kernel/drivers/usb/gadget/libcomposite.ko.xz
+
+########## HOW IS THE GADGET COMPOSED? ##########
+--- loaded ---
+usb_f_ecm              20480  1
+g_ether                16384  0
+usb_f_rndis            32768  2 g_ether
+u_ether                28672  3 usb_f_rndis,g_ether,usb_f_ecm
+libcomposite           81920  4 usb_f_rndis,u_ether,g_ether,usb_f_ecm
+--- configfs gadget ---
+/sys/kernel/config/usb_gadget/
+--- package files ---
+-rwxr-xr-x 1 root root 11657 Oct 14  2025 /usr/bin/rpi-usb-gadget
+/.
+/etc
+/etc/update-motd.d
+/etc/update-motd.d/99-rpi-usb-gadget
+/usr
+/usr/bin
+/usr/bin/rpi-usb-gadget
+/usr/lib
+/usr/lib/modprobe.d
+/usr/lib/modprobe.d/g_ether.conf
+/usr/lib/systemd
+/usr/lib/systemd/system
+/usr/lib/systemd/system/rpi-usb-gadget-ics.service
+/usr/libexec
+/usr/libexec/rpi-usb-gadget
+/usr/libexec/rpi-usb-gadget/ics-watch
+/usr/share
+/usr/share/doc
+/usr/share/doc/rpi-usb-gadget
+/usr/share/doc/rpi-usb-gadget/changelog.gz
+/usr/share/doc/rpi-usb-gadget/copyright
+--- g_ether.conf / defaults / modules-load.d ---
+# /etc/modules is obsolete and has been replaced by /etc/modules-load.d/.
+# Please see modules-load.d(5) and modprobe.d(5) for details.
+#
+# Updating this file still works, but it is undocumented and unsupported.
+i2c-dev
+g_ether
+
+########## ICS WATCHER (previous normal boot) ##########
+○ rpi-usb-gadget-ics.service - USB gadget ICS auto-switcher (client <-> shared)
+     Loaded: loaded (/usr/lib/systemd/system/rpi-usb-gadget-ics.service; enabled; preset: enabled)
+     Active: inactive (dead)
+--- journal, previous boot ---
+Specifying boot ID or boot offset has no effect, no persistent journal was found.
+--- journal, previous boot, gadget/module lines ---
+
+########## NETWORK ##########
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+usb0             DOWN           
+wlan0            DOWN           
+2: usb0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether aa:14:02:23:ca:5c brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast           
+             0       0      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+             0       0      0       0       0       0 
+===== end =====
