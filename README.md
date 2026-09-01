@@ -37,6 +37,56 @@ Pi modes, for reference:
   upstream. Useless here: the Pi has no upstream.
 - **client** — Pi DHCPs from our gateway. This is what we want.
 
+## Retest with dr_mode=peripheral: byte-identical failure (2026-09-01)
+
+The `config.txt` fix took, and it changed nothing.
+
+**Proof the fix applied** — four lines present in the otg run are absent in the
+peripheral run. They are the dwc2 *host controller* registration, which peripheral-only
+mode does not perform:
+
+```
+- dwc2 3f980000.usb: DWC OTG Controller
+- dwc2 3f980000.usb: new USB bus registered, assigned bus number 1
+- dwc2 3f980000.usb: irq 51, io mem 0x3f980000
+- usb usb1: Manufacturer: Linux 6.18.39+rpt-rpi-v8 dwc2_hsotg
+```
+
+(The in-payload `find /proc/device-tree -name dr_mode` check returned nothing, but that
+is a bug in the check, not a finding: `/proc/device-tree` is a symlink and `find` will
+not descend into one without `-L`.)
+
+**The failure is unchanged.** `rx_packets` reaches 1 at t=10s and stays there for the
+next 350s, while `tx_packets` climbs to 284. Identical to the otg run.
+
+**ECM MAC negotiation is fine**, which kills the descriptor theory outright:
+
+```
+Pi dmesg : g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+Mac      : en7 hardware address 8e:d3:84:da:46:09   (and IOKit IOMACAddress agrees)
+```
+
+macOS adopts the advertised host MAC correctly. Whatever is broken, it is not the
+descriptor or the MAC.
+
+### What both sides now agree on
+
+Exactly one frame, 76 bytes, crosses at t<10s. Then the OUT direction stops dead and
+never recovers, in either mode, across eight sessions.
+
+The most economical reading: the gadget's OUT endpoint takes one packet and never
+re-arms, so the host's OUT transfers stop completing, its queue backs up, and `Opkts`
+freezes at 161. That makes the frozen host counter a *consequence* of the device-side
+stall rather than an independent macOS fault — and it means the earlier "macOS never
+transmits" framing had the causality backwards.
+
+Not yet collected, and the obvious next step: `/sys/kernel/debug/dwc2/` endpoint state
+and `/proc/interrupts` IRQ 51 counts across the wedge. If the dwc2 interrupt count
+keeps climbing while `rx_packets` is flat, this is a software requeue bug in `u_ether`;
+if it stalls, the controller itself has halted the endpoint.
+
+Evidence: `diag3-peripheral.txt`.
+
 ## ROOT CAUSE: the Mac never puts a frame on the wire (2026-09-01)
 
 `en7` transmits nothing at all. Not "the packets are queued and lost somewhere" —

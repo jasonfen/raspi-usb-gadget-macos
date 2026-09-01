@@ -1,0 +1,191 @@
+===== dwc2 diagnostic (incremental) Wed 19 Aug 05:36:30 UTC 2026 =====
+Linux pwnagernchi 6.18.39+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.18.39-1+rpt1 (2026-07-29) aarch64 GNU/Linux
+
+########## g_ether.conf ##########
+options g_ether idVendor=0x2E8A idProduct=0x0013 iManufacturer="Raspberry Pi Ltd." bcdDevice=0x0100 iProduct="Raspberry Pi USB Gadget" iSerialNumber=
+
+########## /proc/cpuinfo Serial (chroot-stamping theory) ##########
+Serial line: Serial		: 000000001bda2cd5
+awk result:  '000000001bda2cd5'
+dt serial:   000000001bda2cd5
+
+########## udc / link ##########
+udc: 3f980000.usb
+  state=configured soft_connect=
+usb0 mac=ca:47:db:5e:15:43 operstate=down carrier=
+
+########## dr_mode VERIFICATION (config.txt fix, 2026-09-01) ##########
+expect dr_mode=peripheral; 'otg' means the config.txt edit did not take
+  /proc/cmdline: coherent_pool=1M 8250.nr_uarts=1 snd_bcm2835.enable_headphones=0 cgroup_disable=memory snd_bcm2835.enable_hdmi=1 snd_bcm2835.enable_hdmi=0  smsc95xx.macaddr=B8:27:EB:DA:2C:D5 vc_mem.mem_base=0x1fa00000 vc_mem.mem_size=0x20000000  console=ttyS0,115200 console=tty1 root=PARTUUID=d7b49a72-02 rootfstype=ext4 fsck.repair=yes rootwait
+  config.txt [all] dwc2: 44:dtoverlay=dwc2,dr_mode=host 51:dtoverlay=dwc2,dr_mode=peripheral 
+
+########## dmesg BEFORE ##########
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+
+########## SAMPLING 360s -- keep the Mac plugged in ##########
+Pi rx_packets = packets the HOST actually delivered.
+
+t(s)    rx_packets   tx_packets   carrier    note
+0       0            0            ?          rx +1
+10      1            20           1          rx +1
+20      1            28           1          rx flat 10s
+30      1            35           1          rx flat 20s
+40      1            43           1          rx flat 30s
+50      1            50           1          rx flat 40s
+60      1            58           1          rx flat 50s
+  --- dmesg @ t=60s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+70      1            65           1          rx flat 60s
+80      1            73           1          rx flat 70s
+90      1            80           1          rx flat 80s
+100     1            88           1          rx flat 90s
+110     1            95           1          rx flat 100s
+120     1            103          1          rx flat 110s
+  --- dmesg @ t=120s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+130     1            110          1          rx flat 120s
+140     1            118          1          rx flat 130s
+150     1            125          1          rx flat 140s
+160     1            133          1          rx flat 150s
+170     1            140          1          rx flat 160s
+180     1            148          1          rx flat 170s
+  --- dmesg @ t=180s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+190     1            155          1          rx flat 180s
+200     1            163          1          rx flat 190s
+210     1            171          1          rx flat 200s
+220     1            179          1          rx flat 210s
+230     1            186          1          rx flat 220s
+240     1            194          1          rx flat 230s
+  --- dmesg @ t=240s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+250     1            201          1          rx flat 240s
+260     1            209          1          rx flat 250s
+270     1            216          1          rx flat 260s
+280     1            224          1          rx flat 270s
+290     1            231          1          rx flat 280s
+300     1            239          1          rx flat 290s
+  --- dmesg @ t=300s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+310     1            246          1          rx flat 300s
+320     1            254          1          rx flat 310s
+330     1            261          1          rx flat 320s
+340     1            269          1          rx flat 330s
+350     1            276          1          rx flat 340s
+360     1            284          1          rx flat 350s
+  --- dmesg @ t=360s ---
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+
+>>> RX FROZE AT 1 PACKETS
+
+########## dmesg AFTER (full dwc2/gadget history) ##########
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:36:09 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: HOST MAC 8e:d3:84:da:46:09
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: MAC ca:47:db:5e:15:43
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:36:16 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:36:16 2026] dwc2 3f980000.usb: new address 4
+
+########## ep_stop_xfr / txfifo_flush (PR#31 signature) ##########
+[Wed Aug 19 06:36:14 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:36:18 2026] vc_sm_cma_vchi_init: failed to open VCHI service (-22)
+[Wed Aug 19 06:36:18 2026] [vc_sm_connected_init]: failed to initialize shared memory service
+[Wed Aug 19 06:36:18 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+[Wed Aug 19 06:36:18 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+[Wed Aug 19 06:36:18 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+(empty above = the wedge logs nothing, which PR#31 also handles)
+
+########## ics-watch ##########
+Aug 19 06:36:30 pwnagernchi systemd[1]: Started rpi-usb-gadget-ics.service - USB gadget ICS auto-switcher (client <-> shared).
+Aug 19 06:36:30 pwnagernchi ics-watch[613]: [ics-watch | 2026-08-19 06:36:30] Starting ICS watcher (debug=0) on usb0
+
+########## network ##########
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+usb0             UP             10.12.194.1/28 
+wlan0            DOWN           
+wlan0mon         UNKNOWN        
+2: usb0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether ca:47:db:5e:15:43 brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast           
+            76       1      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         13753     292      0       0       0       0 
+USB Gadget (shared):3a0ed404-401d-40d5-8be7-75f54c35c429:802-3-ethernet:usb0
+lo:5a0f803f-26f2-4e4e-af59-878748a80f99:loopback:lo
+USB Gadget (client):2e12651f-92d6-4234-b1b2-2c67bad76fe0:802-3-ethernet:
+===== end =====
