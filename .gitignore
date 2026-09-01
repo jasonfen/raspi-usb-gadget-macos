@@ -1,2 +1,5 @@
 # transient runtime state
 .gadget-if
+
+# derived: bundle of files already tracked individually
+apple-feedback-evidence.tar.gz
