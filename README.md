@@ -37,6 +37,71 @@ Pi modes, for reference:
   upstream. Useless here: the Pi has no upstream.
 - **client** — Pi DHCPs from our gateway. This is what we want.
 
+## PROVEN: the Pi never sees the packets, and it is not at fault
+
+Round-2 diagnostic, 360s, with `dr_mode = peripheral` read directly from the device
+tree (`/proc/device-tree/soc/usb@7e980000/dr_mode`), and with the Mac holding both
+addresses, both on-link routes, and pinging continuously throughout.
+
+The discriminator was the dwc2 interrupt count sampled next to the packet counters.
+**Every 10s interval across the whole run, the dwc2 IRQ delta exactly equals the
+tx_packets delta — 36 consecutive matches, no exceptions:**
+
+```
+t(s)   rx_packets  tx_packets  dwc2_irq     note
+10     1           20          128(+26)     rx +1
+60     1           58          166(+8)      rx flat 50s
+180    1           149         257(+8)      rx flat 170s
+360    1           284         392(+7)      rx flat 350s
+```
+
+Every interrupt the controller raises is accounted for by an outbound completion. Not
+one is attributable to an inbound transfer. The controller is fully alive, interrupting
+normally, all 360 seconds — and it never once sees data arrive from the host.
+
+Device-side error counters, final:
+
+```
+rx_packets 1     rx_bytes 76      rx_errors 0        rx_dropped 0
+rx_fifo_errors 0 rx_over_errors 0 rx_crc_errors 0    rx_missed_errors 0
+tx_packets 292   tx_errors 0      tx_dropped 0
+```
+
+Nothing dropped, nothing errored, nothing logged. There is no fault on the Pi to find.
+
+Paired with the host at the same moment: `Ipkts=318, Opkts=161, Oerrs=0`.
+
+### Conclusion
+
+macOS reports 161 packets transmitted. The device's USB controller registers zero
+inbound activity for any of them. **The packets never leave the Mac.** This is a macOS
+`AppleUserECM` defect, and the Pi, `g_ether`, dwc2 and `rpi-usb-gadget` are all
+uninvolved.
+
+The IRQ counter is what makes this airtight: it is independent of both sides' packet
+counters, which is exactly the weakness that made every earlier measurement in this
+repo arguable.
+
+### Action
+
+- **Withdraw** the comments on rpi-usb-gadget #27 and PR #31. They point maintainers at
+  a bug that is not theirs. The two packaging bugs found along the way (blank
+  `iSerialNumber`, missing `host_addr`/`dev_addr`) are real and worth filing separately,
+  as is the `config.txt` append bug — but none of them cause this.
+- **File with Apple** (Feedback Assistant): CDC ECM gadget, `AppleUserECM` /
+  `IOSkywalkFamily`, TX halts permanently after exactly 161 packets per enumeration,
+  `Oerrs=0`, nothing logged, cleared only by replug. macOS 27.0 beta (26A5421a).
+- **For actual networking**, stop here and use Wi-Fi, or try NCM — a different macOS
+  driver, and the one remaining cheap shot at making USB work.
+
+### Notes on the instruments
+
+- `/sys/kernel/debug/dwc2/` does not exist on this kernel, so no register dumps. The
+  IRQ count from `/proc/interrupts` answered the question better anyway.
+- The `dwc2` IRQ line matches on `3f980000`, not the string `dwc2`, so a `grep -i dwc2`
+  on `/proc/interrupts` returns nothing here.
+- tcpdump started on the Pi but wrote no pcap. Not needed — only one frame ever arrived.
+
 ## The 161 cap is the whole story (2026-09-01, session 9)
 
 Three theories proposed and killed in one session: `dr_mode`, a null MAC, and missing

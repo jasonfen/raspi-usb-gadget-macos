@@ -1,0 +1,142 @@
+===== dwc2 OUT-stall diagnostic, round 2, Wed 19 Aug 05:56:49 UTC 2026 =====
+Linux pwnagernchi 6.18.39+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.18.39-1+rpt1 (2026-07-29) aarch64 GNU/Linux
+
+########## dr_mode (find -L: /proc/device-tree is a symlink) ##########
+  /proc/device-tree/soc/usb@7e980000/dr_mode = peripheral
+  usb node compatible: brcm,bcm2835-usb
+
+########## dwc2 module params ##########
+
+########## debugfs mounted? ##########
+  debugfs on /sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime)
+  debugfs on /sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime)
+  dwc2 debugfs dir: ABSENT
+  contents: 
+
+########## irq line ##########
+  no dwc2 line in /proc/interrupts
+
+########## link ##########
+  udc state=configured
+  usb0 mac=72:90:c6:40:cc:a5 carrier= mtu=1500
+
+  --- dwc2 debugfs @ t=0 (pre-traffic) ---
+  (debugfs absent: /sys/kernel/debug/dwc2/3f980000.usb)
+
+########## dmesg BEFORE ##########
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:56:32 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: HOST MAC 92:6a:f9:36:cf:0e
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: MAC 72:90:c6:40:cc:a5
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: new address 4
+
+########## tcpdump started on usb0 (pid 710) -> usb0.pcap ##########
+
+########## SAMPLING 360s ##########
+IRQ climbing + rx flat = software requeue bug.  Both flat = halted endpoint.
+
+t(s)   rx_packets  tx_packets  dwc2_irq     carrier  note
+0      0           0           102          ?        rx +1
+10     1           20          128(+26)     1        rx +1
+20     1           28          136(+8)      1        rx flat 10s
+30     1           35          143(+7)      1        rx flat 20s
+40     1           43          151(+8)      1        rx flat 30s
+50     1           50          158(+7)      1        rx flat 40s
+
+  --- dwc2 debugfs @ t=50s WEDGED (rx flat 40s) ---
+  (debugfs absent: /sys/kernel/debug/dwc2/3f980000.usb)
+  irq line: 
+
+60     1           58          166(+8)      1        rx flat 50s
+70     1           65          173(+7)      1        rx flat 60s
+80     1           73          181(+8)      1        rx flat 70s
+90     1           80          188(+7)      1        rx flat 80s
+100    1           88          196(+8)      1        rx flat 90s
+110    1           95          203(+7)      1        rx flat 100s
+120    1           103         211(+8)      1        rx flat 110s
+130    1           110         218(+7)      1        rx flat 120s
+140    1           118         226(+8)      1        rx flat 130s
+150    1           125         233(+7)      1        rx flat 140s
+160    1           133         241(+8)      1        rx flat 150s
+170    1           141         249(+8)      1        rx flat 160s
+180    1           149         257(+8)      1        rx flat 170s
+190    1           156         264(+7)      1        rx flat 180s
+200    1           164         272(+8)      1        rx flat 190s
+210    1           171         279(+7)      1        rx flat 200s
+220    1           179         287(+8)      1        rx flat 210s
+230    1           186         294(+7)      1        rx flat 220s
+240    1           194         302(+8)      1        rx flat 230s
+250    1           201         309(+7)      1        rx flat 240s
+260    1           209         317(+8)      1        rx flat 250s
+270    1           216         324(+7)      1        rx flat 260s
+280    1           224         332(+8)      1        rx flat 270s
+290    1           231         339(+7)      1        rx flat 280s
+300    1           239         347(+8)      1        rx flat 290s
+310    1           246         354(+7)      1        rx flat 300s
+320    1           254         362(+8)      1        rx flat 310s
+330    1           261         369(+7)      1        rx flat 320s
+340    1           269         377(+8)      1        rx flat 330s
+350    1           277         385(+8)      1        rx flat 340s
+360    1           284         392(+7)      1        rx flat 350s
+
+  --- dwc2 debugfs @ t=360s (final) ---
+  (debugfs absent: /sys/kernel/debug/dwc2/3f980000.usb)
+
+########## usb0 full statistics ##########
+  collisions = 0
+  multicast = 0
+  rx_bytes = 76
+  rx_compressed = 0
+  rx_crc_errors = 0
+  rx_dropped = 0
+  rx_errors = 0
+  rx_fifo_errors = 0
+  rx_frame_errors = 0
+  rx_length_errors = 0
+  rx_missed_errors = 0
+  rx_nohandler = 0
+  rx_over_errors = 0
+  rx_packets = 1
+  tx_aborted_errors = 0
+  tx_bytes = 13814
+  tx_carrier_errors = 0
+  tx_compressed = 0
+  tx_dropped = 0
+  tx_errors = 0
+  tx_fifo_errors = 0
+  tx_heartbeat_errors = 0
+  tx_packets = 292
+  tx_window_errors = 0
+
+########## dmesg AFTER ##########
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: supply vusb_d not found, using dummy regulator
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: supply vusb_a not found, using dummy regulator
+[Wed Aug 19 06:56:28 2026] dwc2 3f980000.usb: EPs: 8, dedicated fifos, 4080 entries in SPRAM
+[Wed Aug 19 06:56:32 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: HOST MAC 92:6a:f9:36:cf:0e
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: MAC 72:90:c6:40:cc:a5
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: Ethernet Gadget, version: Memorial Day 2008
+[Wed Aug 19 06:56:35 2026] g_ether gadget.0: g_ether ready
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: bound driver g_ether
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: new device is high-speed
+[Wed Aug 19 06:56:35 2026] dwc2 3f980000.usb: new address 4
+[Wed Aug 19 06:56:50 2026] g_ether gadget.0 usb0: entered promiscuous mode
+[Wed Aug 19 06:56:50 2026] g_ether gadget.0 usb0: left promiscuous mode
+
+########## anything logged at all since boot (errors) ##########
+[Wed Aug 19 06:56:32 2026] systemd[1]: Watchdog running with a hardware timeout of 1min.
+[Wed Aug 19 06:56:37 2026] vc_sm_cma_vchi_init: failed to open VCHI service (-22)
+[Wed Aug 19 06:56:37 2026] [vc_sm_connected_init]: failed to initialize shared memory service
+[Wed Aug 19 06:56:37 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+[Wed Aug 19 06:56:37 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+[Wed Aug 19 06:56:37 2026] bcm2835_mmal_vchiq: Failed to open VCHI service connection (status=-22)
+
+########## pcap ##########
+  no pcap
+===== end =====
