@@ -537,6 +537,19 @@ sudo ./full-setup.sh      # waits for the interface, configures everything,
 
 That is the whole flow. The others are diagnostics:
 
+Session-9 diagnostics (the ones that actually settled it):
+
+```sh
+sudo ./addr-and-route.sh  # apply addresses, prove the on-link routes exist, drive traffic
+sudo ./tx-probe.sh        # does anything leave the interface? separates dead TX from a lying Opkts
+sudo ./bpf-control.sh     # CONTROL: can tcpdump see outbound here at all? run before believing tx-probe
+./host-watch.sh           # 400s host-side counter log, pairs with the Pi's diag4.txt
+./read-diag4.sh           # pull and summarise diag4.txt from a mounted boot partition
+sudo ./mac-force.sh       # dead end, kept as a record: forcing the MAC changes nothing
+```
+
+Each writes its output next to itself, so the repo can be moved without editing paths.
+
 ```sh
 sudo ./capture.sh 20      # what is actually on the wire (start here when stuck)
 sudo ./check-gadget.sh    # is the gadget enumerated with real interfaces?
