@@ -1,4 +1,4 @@
-# Raspberry Pi USB gadget — internet sharing from this Mac
+# Raspberry Pi USB gadget internet sharing from MacOS 26 Public Beta
 
 Pi runs [rpi-usb-gadget](https://github.com/raspberrypi/rpi-usb-gadget) (PiOS trixie).
 The USB cable is the Pi's **only** connection — it has no upstream of its own.
