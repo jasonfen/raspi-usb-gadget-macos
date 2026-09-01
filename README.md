@@ -37,6 +37,83 @@ Pi modes, for reference:
   upstream. Useless here: the Pi has no upstream.
 - **client** — Pi DHCPs from our gateway. This is what we want.
 
+## ROOT CAUSE: the Mac never puts a frame on the wire (2026-09-01)
+
+`en7` transmits nothing at all. Not "the packets are queued and lost somewhere" —
+nothing is ever emitted.
+
+tcpdump on `en7`, 10s, while actively generating traffic (broadcast ping, unicast
+ping, a ping to an unresolved address to force a fresh ARP):
+
+```
+5 packets captured
+19:08:25 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff  ARP Request who-has 10.42.0.1 tell 10.12.194.1
+19:08:27 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff  ARP Request who-has 192.168.137.1 tell 10.12.194.1
+19:08:28 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff  ARP Request who-has 192.168.2.1 tell 10.12.194.1
+...
+outbound frames from this Mac: 0
+```
+
+All five are inbound from the Pi. Zero outbound — including the `arp-responder.py`
+BPF injections, which logged 111 replies sent over the same window. BPF writes do not
+reach the wire either.
+
+Paired counters over 400s (`hostside.txt` + `diag2.txt`):
+
+| | host (en7) | device (usb0) |
+|---|---|---|
+| Pi -> Mac | Ipkts 143 -> 421 | tx climbing |
+| Mac -> Pi | Opkts **161, flat, Oerrs 0** | rx ~0 |
+
+A broadcast ping — which needs no ARP resolution and must hit the wire — moves `Opkts`
+by exactly 0.
+
+### The likely mechanism: the BSD interface never got a MAC
+
+```
+IOKit  "IOMACAddress" = <8ed384da4609>     # correct, read from the descriptor
+en7    ether 02:00:00:00:00:00             # what the BSD/Skywalk interface actually has
+```
+
+IOKit parsed the address fine; it never propagated into the network interface. An
+interface with an all-zero source MAC cannot transmit, which is exactly what the
+capture shows.
+
+The control plane is failing the same way. Both of these are `ETIMEDOUT` on a control
+operation against the same dext:
+
+```
+BIOCPROMISC: Operation timed out          # tcpdump, this session
+mis_bridge_add_int_if: ... err 60         # InternetSharing BRDGADD, earlier
+```
+
+So the Internet Sharing bridge failure is not a separate bug to work around — it is
+the same fault. The stack is `AppleUSBCDCCompositeDevice` -> `AppleUserECM` (DriverKit)
+-> `IOSkywalkLegacyEthernet` -> `IOSkywalkNetworkBSDClient`.
+
+This also explains the host-dependence in #19. Linux's `cdc_ether` tolerates a MAC it
+cannot use and substitutes a random one. `AppleUserECM` appears to come up
+half-initialised instead: RX armed, TX never.
+
+### The packaging bugs are probably the trigger, not a footnote
+
+macOS is visibly choking on the descriptor `g_ether.conf` ships:
+
+```
+ioreg: "iSerialNumber" = 3      # a serial string is declared at index 3
+ioreg: (no "USB Serial Number" property)   # ...and reads back empty
+```
+
+Combined with no `host_addr`/`dev_addr`, so the advertised MAC is random every boot.
+Next test is to set all three in `g_ether.conf` and see whether `en7` comes up with a
+real MAC and a live TX path.
+
+### Not the dr_mode defect
+
+The `dtoverlay=dwc2` misconfiguration documented below is real and worth keeping fixed,
+but it is not the cause: the Mac emits nothing regardless of what mode the Pi's
+controller is in.
+
 ## The controller was never in peripheral mode (found 2026-09-01)
 
 Every measurement below was taken with dwc2 in **otg** mode, not peripheral. In

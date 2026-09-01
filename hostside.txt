@@ -1,0 +1,54 @@
+===== host-side counters, en7, Tue Sep  1 23:03:34 UTC 2026 =====
+paired with device-side diag2.txt from the dr_mode=peripheral retest
+	ether 02:00:00:00:00:00
+	inet 192.168.2.1 netmask 0xffffff00 broadcast 192.168.2.255
+	inet 10.12.194.2 netmask 0xfffffff0 broadcast 10.12.194.15
+	inet 169.254.108.250 netmask 0xffff0000 broadcast 169.254.255.255
+	status: active
+
+t       Ipkts     Opkts     Ierrs    Oerrs    note
+0       143       161       0        0        start
+10      150       161       0        0        Opkts FLAT
+20      157       161       0        0        Opkts FLAT
+30      164       161       0        0        Opkts FLAT
+40      170       161       0        0        Opkts FLAT
+50      177       161       0        0        Opkts FLAT
+60      184       161       0        0        Opkts FLAT
+70      191       161       0        0        Opkts FLAT
+80      197       161       0        0        Opkts FLAT
+90      204       161       0        0        Opkts FLAT
+100     211       161       0        0        Opkts FLAT
+110     218       161       0        0        Opkts FLAT
+120     224       161       0        0        Opkts FLAT
+130     231       161       0        0        Opkts FLAT
+140     238       161       0        0        Opkts FLAT
+150     245       161       0        0        Opkts FLAT
+160     251       161       0        0        Opkts FLAT
+170     258       161       0        0        Opkts FLAT
+180     265       161       0        0        Opkts FLAT
+190     272       161       0        0        Opkts FLAT
+200     278       161       0        0        Opkts FLAT
+210     285       161       0        0        Opkts FLAT
+220     292       161       0        0        Opkts FLAT
+230     299       161       0        0        Opkts FLAT
+240     305       161       0        0        Opkts FLAT
+250     312       161       0        0        Opkts FLAT
+260     319       161       0        0        Opkts FLAT
+270     326       161       0        0        Opkts FLAT
+280     332       161       0        0        Opkts FLAT
+290     339       161       0        0        Opkts FLAT
+300     346       161       0        0        Opkts FLAT
+310     353       161       0        0        Opkts FLAT
+320     357       161       0        0        Opkts FLAT
+330     367       161       0        0        Opkts FLAT
+340     374       161       0        0        Opkts FLAT
+350     380       161       0        0        Opkts FLAT
+360     387       161       0        0        Opkts FLAT
+370     394       161       0        0        Opkts FLAT
+380     401       161       0        0        Opkts FLAT
+390     407       161       0        0        Opkts FLAT
+400     414       161       0        0        Opkts FLAT
+
+final: Ipkts=421 Opkts=161
+arp: 
+===== end =====
