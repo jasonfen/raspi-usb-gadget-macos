@@ -1,0 +1,54 @@
+===== wedged-state snapshot, Tue Sep  1 23:56:00 UTC 2026 =====
+interface: en7
+
+########## counters ##########
+Name       Mtu   Network       Address            Ipkts Ierrs     Ibytes    Opkts Oerrs     Obytes  Coll
+en7        1500  <Link#44>   02:00:00:00:00:00      175     0       8839      161     0      44834     0
+
+########## interface ##########
+en7: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	options=6464<VLAN_MTU,TSO4,TSO6,CHANNEL_IO,PARTIAL_CSUM,ZEROINVERT_CSUM>
+	ether 02:00:00:00:00:00
+	inet 192.168.2.1 netmask 0xffffff00 broadcast 192.168.2.255
+	inet 10.12.194.2 netmask 0xfffffff0 broadcast 10.12.194.15
+	inet6 fe80::4e4:d7d0:61fc:f72%en7 prefixlen 64 secured scopeid 0x2c 
+	inet 169.254.113.214 netmask 0xffff0000 broadcast 169.254.255.255
+	nd6 options=201<PERFORMNUD,DAD>
+	media: autoselect (100baseTX <full-duplex>)
+	status: active
+
+########## routes ##########
+Destination        Gateway            Flags               Netif Expire
+10.12.194/28       link#44            UC                    en7      !
+169.254            link#44            UCSI                  en7      !
+169.254.113.214/32 link#44            UCS                   en7      !
+192.168.2          link#44            UC                    en7      !
+224.0.0/4          link#44            UmCSI                 en7      !
+255.255.255.255/32 link#44            UCSI                  en7      !
+
+########## arp ##########
+
+########## route resolution ##########
+destination: 10.12.194.1
+  interface: en7
+
+########## driver stack ##########
+  +-o CDC Ethernet Control Model (ECM)@0  <class IOUSBHostInterface, id 0x100002eda, registered, matched, active, busy 0 (36 ms), retain 11>
+  | +-o AppleUserECM  <class IOUserNetworkEthernet, id 0x100002ee2, registered, matched, active, busy 0 (5 ms), retain 21>
+  |   +-o IOSkywalkLegacyEthernet  <class IOSkywalkLegacyEthernet, id 0x100002ee9, !registered, !matched, active, busy 0 (1 ms), retain 8>
+  |   | +-o en7  <class IOSkywalkLegacyEthernetInterface, id 0x100002eeb, registered, matched, active, busy 0 (1 ms), retain 10>
+  |   |   +-o IONetworkStack  <class IONetworkStack, id 0x100000819, registered, matched, active, busy 0 (2 ms), retain 22>
+  |   |     +-o IONetworkStackUserClient  <class IONetworkStackUserClient, id 0x100000e86, !registered, !matched, active, busy 0, retain 5>
+  |   +-o IOSkywalkNetworkBSDClient  <class IOSkywalkNetworkBSDClient, id 0x100002eee, registered, matched, active, busy 0 (3 ms), retain 8>
+  +-o IOUSBHostInterface@1  <class IOUSBHostInterface, id 0x100002edd, registered, matched, active, busy 0 (22 ms), retain 12>
+    +-o AppleUserECMData  <class IOUserService, id 0x100002edf, !registered, !matched, active, busy 0, retain 8>
+
+########## interface statistics (netstat -s highlights) ##########
+			0 dropped (dup or out of space)
+			0 dropped after timeout
+		0 output packet dropped due to no bufs, etc.
+		0 output packet discarded due to no route
+		0 output datagram fragmented
+		0 packet dropped due to no bufs for control data
+		0 packet dropped due to NECP policy
+===== end =====

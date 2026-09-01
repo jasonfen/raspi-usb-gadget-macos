@@ -2,7 +2,7 @@
 
 **Area:** macOS → Networking (also relevant: USB, DriverKit)
 **Type:** Incorrect/Unexpected Behavior
-**Reproducibility:** Always (10/10 attempts)
+**Reproducibility:** Always (10/10 attempts, ten independent enumerations)
 
 ---
 
@@ -31,7 +31,7 @@ After that point:
 The only recovery is physically unplugging and reattaching the device, which creates a
 new interface instance and buys exactly 161 more packets.
 
-The count is 161 in every observed session, across nine independent enumerations, and is
+The count is 161 in every observed session, across ten independent enumerations, and is
 insensitive to everything tried: interface bounce, `-tso` and other offload changes, MTU
 changes, address reassignment, and re-adding routes. `Obytes` differs between sessions
 while `Opkts` is identical, so the limit is on packet count and not on bytes.
@@ -68,6 +68,24 @@ Host-side at the same moment: `Ipkts=318  Opkts=161  Oerrs=0`.
 
 macOS reported 161 packets transmitted. The receiving USB controller registered zero
 inbound activity for any of them.
+
+### Secondary symptom: the BSD interface intermittently carries a null MAC
+
+In some enumerations the BSD interface is left with `02:00:00:00:00:00` while IOKit holds
+the correct address parsed from the device's ECM descriptor. Observed live during a
+wedged session:
+
+```
+BSD en7 MAC        : 02:00:00:00:00:00
+IOKit IOMACAddress : <cada01211b05>
+networksetup HW    : ca:da:01:21:1b:05
+```
+
+This is intermittent — other enumerations show the correct address on the BSD interface —
+and it is **not** required for the transmit failure: sessions with the correct MAC applied
+wedge at 161 identically. It is reported here because both symptoms are consistent with
+the dext completing attach in a partially-initialised state, and the MAC discrepancy may
+be the easier of the two to trace.
 
 ### Probable related symptom
 
@@ -151,6 +169,8 @@ both, and the device-side evidence above is unaffected by any host-side routing 
 - `txprobe.txt`, `bpf_en0.cap`, `bpf_en7.cap` — packet capture showing zero outbound on
   the gadget interface and 29/60 outbound on Wi-Fi as a control
 - `opkts-161-session9.txt` — the counter freezing at 161 with routes verified present
+- `wedged-snapshot.txt` — full interface, route, ARP and driver-stack state captured
+  live while wedged, alongside the sysdiagnose
 - Sysdiagnose captured while the interface is wedged
 
 ### Capturing the sysdiagnose

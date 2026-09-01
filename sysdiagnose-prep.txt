@@ -1,0 +1,53 @@
+=== 1. waiting for the gadget interface (up to 150s) ===
+[t+0s] en7 is up
+
+=== 2. applying addresses ===
+  	ether ca:da:01:21:1b:05
+  	inet 192.168.2.1 netmask 0xffffff00 broadcast 192.168.2.255
+  	inet 10.12.194.2 netmask 0xfffffff0 broadcast 10.12.194.15
+  	status: active
+
+=== 3. on-link routes (must resolve to en7, not en0) ===
+  10.12.194/28       link#44            UC                    en7      !
+  10.12.194.1        5e:70:68:10:d5:68  UHLWI                 en7   1200
+  192.168.2          link#44            UC                    en7      !
+  routes OK
+
+=== 4. driving traffic until TX wedges ===
+  Opkts=82     climbing
+  Opkts=86     climbing
+  Opkts=89     climbing
+  Opkts=95     climbing
+  Opkts=116    climbing
+  Opkts=123    climbing
+  Opkts=126    climbing
+  Opkts=131    climbing
+  Opkts=134    climbing
+  Opkts=135    climbing
+  Opkts=137    climbing
+  Opkts=139    climbing
+  Opkts=141    climbing
+  Opkts=142    climbing
+  Opkts=146    climbing
+  Opkts=148    climbing
+  Opkts=150    climbing
+  Opkts=151    climbing
+  Opkts=154    climbing
+  Opkts=156    climbing
+  Opkts=160    climbing
+  Opkts=161    climbing
+  Opkts=161    flat x1
+  Opkts=161    flat x2
+  Opkts=161    flat x3
+  Opkts=161    flat x4
+
+=== 5. verdict ===
+  final Opkts = 161
+  Ipkts=69  Opkts=161  Oerrs=0
+  *** TX IS WEDGED. Capture now: ***
+
+      sudo sysdiagnose
+
+  ~5 min, writes /var/tmp/sysdiagnose_*.tar.gz.
+  Do NOT unplug the Pi until it finishes.
+  (wedged at 161, consistent with all nine prior sessions)
