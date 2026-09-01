@@ -68,6 +68,33 @@ Paired counters over 400s (`hostside.txt` + `diag2.txt`):
 A broadcast ping — which needs no ARP resolution and must hit the wire — moves `Opkts`
 by exactly 0.
 
+### Instrument control (run this before trusting any capture)
+
+"en7 sends nothing" is only meaningful if tcpdump on this Mac can see outbound frames
+at all. Same capture, same script, against Wi-Fi as a control:
+
+| interface | frames | outbound from our own MAC |
+|---|---|---|
+| `en0` (control) | 60 | **29** |
+| `en7` (gadget) | 3 | **0** |
+
+BPF outbound visibility works here. The zero on `en7` is real.
+
+Evidence: `bpf_en0.cap`, `bpf_en7.cap`.
+
+### Not a null MAC (theory tried and dropped)
+
+`en7` was once observed with `ether 02:00:00:00:00:00` while IOKit held the correct
+`IOMACAddress = 8e:d3:84:da:46:09`, which looked like a stuck null address preventing
+transmission. It is not: on a later check `en7` carried the correct MAC and TX was
+still completely dead. The all-zero read was a transient initialisation state.
+
+### The wedge happens after enumeration, not instead of it
+
+Worth keeping in view: the device received **exactly 1 packet, 76 bytes, within the
+first 10s**, then nothing for 350s. The path carries a frame once and then stops. This
+is a wedge shortly after enumeration, not a link that never came up.
+
 ### The likely mechanism: the BSD interface never got a MAC
 
 ```

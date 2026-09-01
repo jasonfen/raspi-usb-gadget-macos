@@ -1,0 +1,15 @@
+=== en0 (mac 52:be:96:42:a9:5b) ===
+  tcpdump died:
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on en0, link-type EN10MB (Ethernet), snapshot length 524288 bytes
+60 packets captured
+82 packets received by filter
+0 packets dropped by kernel
+=== en7 (mac 8e:d3:84:da:46:09) ===
+  frames: 3   outbound (src=8e:d3:84:da:46:09): 0
+  >>> NO outbound visible on en7
+
+INTERPRETATION:
+  en0 outbound > 0 and en7 outbound = 0  -> en7 TX really is dead
+  both 0                                 -> BPF cannot see outbound here;
+                                            every 'nothing sent' claim is void

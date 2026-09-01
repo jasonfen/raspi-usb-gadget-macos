@@ -1,0 +1,18 @@
+IOKit IOMACAddress : 8e:d3:84:da:46:09
+en7 before         : 8e:d3:84:da:46:09
+--- forcing en7 MAC ---
+ifconfig: ioctl (SIOCAIFADDR): Can't assign requested address
+  (set failed)
+en7 after          : 8e:d3:84:da:46:09
+Opkts before: 161
+Opkts after : 161  (delta 0)
+=== frames captured: 4 ===
+19:20:05.560052 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.42.0.1 (ff:ff:ff:ff:ff:ff) tell 10.12.194.1, length 28
+19:20:07.520373 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 192.168.137.1 (ff:ff:ff:ff:ff:ff) tell 10.12.194.1, length 28
+19:20:08.537859 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 192.168.2.1 (ff:ff:ff:ff:ff:ff) tell 10.12.194.1, length 28
+19:20:09.553785 ca:47:db:5e:15:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.42.0.1 (ff:ff:ff:ff:ff:ff) tell 10.12.194.1, length 28
+
+
+outbound frames from us: 0
+VERDICT:
+  still nothing outbound -- the MAC is not the (only) blocker.

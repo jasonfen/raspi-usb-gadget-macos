@@ -1,0 +1,60 @@
+19:21:24.802047 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.55611 > 17.248.169.121.443: quic, protected
+19:21:24.819675 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1514: 17.248.169.121.443 > 192.168.5.179.55611: quic, protected
+19:21:24.849964 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.55611 > 17.248.169.121.443: quic, protected
+19:21:24.974942 bc:24:11:9b:3d:38 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 74: Request who-has 192.168.5.30 tell 192.168.5.223, length 60
+19:21:25.085622 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 54: 192.168.5.179.52302 > 160.79.104.10.443: Flags [.], ack 1978741462, win 2048, length 0
+19:21:25.097022 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 66: 160.79.104.10.443 > 192.168.5.179.52302: Flags [.], ack 1, win 16, options [nop,nop,TS val 1478912009 ecr 2659672024], length 0
+19:21:25.174771 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.50470 > 17.248.228.71.443: quic, initial, dcid a7b648fed9677b94, length 1182
+19:21:25.174807 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.50470 > 17.248.228.71.443: quic, initial, dcid a7b648fed9677b94, length 1182
+19:21:25.190701 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 93: 17.248.228.71.443 > 192.168.5.179.50470: quic, initial, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 22
+19:21:25.193028 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 17.248.228.71.443 > 192.168.5.179.50470: quic, initial, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 1170
+19:21:25.193030 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 17.248.228.71.443 > 192.168.5.179.50470: quic, initial, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 55, handshake, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 1087
+19:21:25.193033 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 17.248.228.71.443 > 192.168.5.179.50470: quic, handshake, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 1171
+19:21:25.193035 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 17.248.228.71.443 > 192.168.5.179.50470: quic, handshake, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 1171
+19:21:25.193036 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 282: 17.248.228.71.443 > 192.168.5.179.50470: quic, handshake, scid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 211
+19:21:25.194312 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.50470 > 17.248.228.71.443: quic, initial, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 1170
+19:21:25.194338 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 93: 192.168.5.179.50470 > 17.248.228.71.443: quic, handshake, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 22
+19:21:25.207947 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 143: 192.168.5.179.50470 > 17.248.228.71.443: quic, handshake, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438, length 72
+19:21:25.209572 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.210441 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 108: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.214837 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 894: 17.248.228.71.443 > 192.168.5.179.50470: quic, protected
+19:21:25.215491 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 93: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.215504 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1294: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.217362 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1238: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.217372 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 262: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.217644 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 863: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.217801 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.50470 > 17.248.228.71.443: quic, protected, dcid 0056ec60f10c1e0e01eb8a099c89c9f1b8c2c438
+19:21:25.218997 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.219000 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 67: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.219526 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 88: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.219568 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.224399 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 65: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.224401 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 65: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.224402 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 65: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.249377 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 83: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.249943 bc:24:11:81:02:18 > 52:be:96:42:a9:5b, ethertype ARP (0x0806), length 60: Request who-has 192.168.5.179 tell 192.168.4.54, length 46
+19:21:25.249978 52:be:96:42:a9:5b > bc:24:11:81:02:18, ethertype ARP (0x0806), length 42: Reply 192.168.5.179 is-at 52:be:96:42:a9:5b, length 28
+19:21:25.252237 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 66: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.281523 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 83: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.281956 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 66: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.313365 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1514: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.313367 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 66: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.339722 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.436006 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1514: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.436009 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1448: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.436266 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.443897 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 63: 17.250.96.141.443 > 192.168.5.179.65424: quic, protected
+19:21:25.474320 52:be:96:42:a9:5b > bc:24:11:81:02:18, ethertype IPv4 (0x0800), length 102: 192.168.5.179.50915 > 192.168.4.54.53: 53096+ Type65? gcs-blue-upload-us.l.googleusercontent.com. (60)
+19:21:25.477321 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.52821 > 192.179.26.207.443: quic, initial, dcid cc36315e3d8bfd0c, length 1182
+19:21:25.477344 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.52821 > 192.179.26.207.443: quic, initial, dcid cc36315e3d8bfd0c, length 1182
+19:21:25.477457 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 85: 192.168.5.179.65424 > 17.250.96.141.443: quic, protected
+19:21:25.496547 bc:24:11:81:02:18 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 159: 192.168.4.54.53 > 192.168.5.179.50915: 53096 0/1/0 (117)
+19:21:25.551828 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 85: 192.179.26.207.443 > 192.168.5.179.52821: quic, initial, scid ec36315e3d8bfd0c, length 25
+19:21:25.551831 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, initial, scid ec36315e3d8bfd0c, length 1182
+19:21:25.551834 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, initial, scid ec36315e3d8bfd0c, length 1182
+19:21:25.551836 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, initial, scid ec36315e3d8bfd0c, length 1182
+19:21:25.551838 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, initial, scid ec36315e3d8bfd0c, length 1182
+19:21:25.553081 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 1242: 192.168.5.179.52821 > 192.179.26.207.443: quic, initial, dcid ec36315e3d8bfd0c, length 1182
+19:21:25.554113 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, handshake, scid ec36315e3d8bfd0c, length 1183
+19:21:25.554115 64:62:66:21:df:e4 > 52:be:96:42:a9:5b, ethertype IPv4 (0x0800), length 1242: 192.179.26.207.443 > 192.168.5.179.52821: quic, handshake, scid ec36315e3d8bfd0c, length 1183
+19:21:25.554325 52:be:96:42:a9:5b > 64:62:66:21:df:e4, ethertype IPv4 (0x0800), length 81: 192.168.5.179.52821 > 192.179.26.207.443: quic, handshake, dcid ec36315e3d8bfd0c, length 22
