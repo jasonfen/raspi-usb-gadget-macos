@@ -13,91 +13,130 @@ done
 
 cat > /usr/local/sbin/rpi-usb-diag.sh <<'PAYLOAD'
 #!/bin/bash
-# Samples usb0 and dmesg while the Mac is connected.
-# Writes INCREMENTALLY and syncs after every step, so an early unplug
-# still leaves usable data on the FAT partition.
+# Round 2: is the OUT stall a halted dwc2 endpoint or a u_ether requeue bug?
+# Discriminator: dwc2 IRQ count sampled alongside rx_packets.
+#   IRQ climbing while rx flat  -> controller alive, software never re-arms RX
+#   IRQ flat while rx flat      -> controller halted the endpoint
 set +e
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 B=/boot/firmware; [ -d /boot/firmware ] || B=/boot
-D=$B/diag2.txt
+D=$B/diag4.txt
+DBG=/sys/kernel/debug/dwc2/3f980000.usb
 
 say() { echo "$@" >> "$D"; sync; }
 rx()  { cat /sys/class/net/usb0/statistics/rx_packets 2>/dev/null || echo -1; }
 tx()  { cat /sys/class/net/usb0/statistics/tx_packets 2>/dev/null || echo -1; }
-dwc() { dmesg -T 2>/dev/null | grep -iE "dwc2|ep_stop_xfr|txfifo|ep[0-9]|gadget|usb0|g_ether|reset|timeout"; }
+irq() { local v
+        v=$(grep -iE 'dwc2|3f980000' /proc/interrupts | head -1 \
+            | awk '{s=0; for(i=2;i<=NF;i++) if($i ~ /^[0-9]+$/) s+=$i; print s}')
+        echo "${v:-0}"; }
+dwc() { dmesg -T 2>/dev/null | grep -iE "dwc2|ep_stop_xfr|txfifo|ep[0-9]|gadget|usb0|g_ether|halt|stall|reset|timeout"; }
+
+# dump every readable dwc2 debugfs file, size-capped so a hang cannot eat the run
+dbgdump() {
+  say "  --- dwc2 debugfs @ $1 ---"
+  if [ ! -d "$DBG" ]; then say "  (debugfs absent: $DBG)"; return; fi
+  for f in "$DBG"/*; do
+    [ -f "$f" ] || continue
+    say "  [$(basename "$f")]"
+    say "$(timeout 5 head -c 3000 "$f" 2>/dev/null | sed 's/^/    /')"
+  done
+  for d in "$DBG"/ep*; do
+    [ -d "$d" ] || continue
+    say "  [ep dir $(basename "$d")]"
+    for f in "$d"/*; do
+      [ -f "$f" ] && say "    $(basename "$f"): $(timeout 5 head -c 800 "$f" 2>/dev/null | tr '\n' ' ')"
+    done
+  done
+}
 
 : > "$D"
-say "===== dwc2 diagnostic (incremental) $(date -u) ====="
+say "===== dwc2 OUT-stall diagnostic, round 2, $(date -u) ====="
 say "$(uname -a)"
 say ""
-say "########## g_ether.conf ##########"
-say "$(cat /usr/lib/modprobe.d/g_ether.conf 2>/dev/null)"
-say ""
-say "########## /proc/cpuinfo Serial (chroot-stamping theory) ##########"
-say "Serial line: $(grep -i '^Serial' /proc/cpuinfo 2>/dev/null || echo 'ABSENT')"
-say "awk result:  '$(awk '/^Serial/{print $3}' /proc/cpuinfo 2>/dev/null)'"
-say "dt serial:   $(tr -d '\0' < /sys/firmware/devicetree/base/serial-number 2>/dev/null)"
-say ""
-say "########## udc / link ##########"
-say "udc: $(ls /sys/class/udc/ 2>/dev/null)"
-for u in /sys/class/udc/*/; do
-  say "  state=$(cat $u/state 2>/dev/null) soft_connect=$(cat $u/soft_connect 2>/dev/null)"
-done
-say "usb0 mac=$(cat /sys/class/net/usb0/address 2>/dev/null) operstate=$(cat /sys/class/net/usb0/operstate 2>/dev/null) carrier=$(cat /sys/class/net/usb0/carrier 2>/dev/null)"
-say ""
-say "########## dr_mode VERIFICATION (config.txt fix, 2026-09-01) ##########"
-say "expect dr_mode=peripheral; 'otg' means the config.txt edit did not take"
-for f in $(find /proc/device-tree -name dr_mode 2>/dev/null); do
+say "########## dr_mode (find -L: /proc/device-tree is a symlink) ##########"
+for f in $(find -L /proc/device-tree -name dr_mode 2>/dev/null); do
   say "  $f = $(tr -d '\0' < "$f" 2>/dev/null)"
 done
-say "  /proc/cmdline: $(cat /proc/cmdline 2>/dev/null)"
-say "  config.txt [all] dwc2: $(grep -n 'dtoverlay=dwc2' $B/config.txt 2>/dev/null | tr '\n' ' ')"
+say "  usb node compatible: $(tr -d '\0' < /proc/device-tree/soc/usb@7e980000/compatible 2>/dev/null)"
+say ""
+say "########## dwc2 module params ##########"
+for f in /sys/module/dwc2/parameters/*; do
+  [ -f "$f" ] && say "  $(basename "$f") = $(cat "$f" 2>/dev/null)"
+done
+say ""
+say "########## debugfs mounted? ##########"
+say "  $(mount | grep -i debugfs || echo 'NOT MOUNTED -- attempting')"
+mountpoint -q /sys/kernel/debug || mount -t debugfs none /sys/kernel/debug 2>/dev/null
+say "  $(mount | grep -i debugfs || echo 'still not mounted')"
+say "  dwc2 debugfs dir: $(ls -d $DBG 2>/dev/null || echo ABSENT)"
+say "  contents: $(ls $DBG 2>/dev/null | tr '\n' ' ')"
+say ""
+say "########## irq line ##########"
+say "  $(grep -i dwc2 /proc/interrupts || echo 'no dwc2 line in /proc/interrupts')"
+say ""
+say "########## link ##########"
+say "  udc state=$(cat /sys/class/udc/*/state 2>/dev/null)"
+say "  usb0 mac=$(cat /sys/class/net/usb0/address 2>/dev/null) carrier=$(cat /sys/class/net/usb0/carrier 2>/dev/null) mtu=$(cat /sys/class/net/usb0/mtu 2>/dev/null)"
+say ""
+dbgdump "t=0 (pre-traffic)"
 say ""
 say "########## dmesg BEFORE ##########"
-say "$(dwc | tail -40)"
+say "$(dwc | tail -30)"
 say ""
-say "########## SAMPLING 360s -- keep the Mac plugged in ##########"
-say "Pi rx_packets = packets the HOST actually delivered."
-say ""
-say "$(printf '%-7s %-12s %-12s %-10s %s' 't(s)' 'rx_packets' 'tx_packets' 'carrier' 'note')"
 
-PREV_RX=-1; STALL=0; FROZE=""
+# capture the actual frames arriving on usb0 -- what IS the one packet?
+if command -v tcpdump >/dev/null 2>&1; then
+  tcpdump -i usb0 -n -e -U -s 128 -w "$B/usb0.pcap" >/dev/null 2>&1 &
+  TCPD=$!
+  say "########## tcpdump started on usb0 (pid $TCPD) -> usb0.pcap ##########"
+else
+  say "########## tcpdump NOT INSTALLED -- no frame capture this run ##########"
+fi
+say ""
+
+say "########## SAMPLING 360s ##########"
+say "IRQ climbing + rx flat = software requeue bug.  Both flat = halted endpoint."
+say ""
+say "$(printf '%-6s %-11s %-11s %-12s %-8s %s' 't(s)' 'rx_packets' 'tx_packets' 'dwc2_irq' 'carrier' 'note')"
+
+PREV_RX=-1; PREV_IRQ=-1; STALL=0; SNAPPED=0
 for t in $(seq 0 10 360); do
-  R=$(rx); T=$(tx); C=$(cat /sys/class/net/usb0/carrier 2>/dev/null)
-  NOTE=""
-  if [ "$R" = "$PREV_RX" ]; then
-    STALL=$((STALL+10)); NOTE="rx flat ${STALL}s"
-    [ -z "$FROZE" ] && [ "$STALL" -ge 30 ] && FROZE="$R"
-  else
-    STALL=0; NOTE="rx +$((R-PREV_RX))"
+  R=$(rx); T=$(tx); Q=$(irq); C=$(cat /sys/class/net/usb0/carrier 2>/dev/null)
+  DQ=""; [ "$PREV_IRQ" -ge 0 ] 2>/dev/null && DQ="(+$((Q-PREV_IRQ)))"
+  if [ "$R" = "$PREV_RX" ]; then STALL=$((STALL+10)); NOTE="rx flat ${STALL}s"
+  else STALL=0; NOTE="rx +$((R-PREV_RX))"; fi
+  say "$(printf '%-6s %-11s %-11s %-12s %-8s %s' "$t" "$R" "$T" "${Q}${DQ}" "${C:-?}" "$NOTE")"
+
+  # the money shot: snapshot debugfs the moment the stall is established
+  if [ "$SNAPPED" -eq 0 ] && [ "$STALL" -ge 40 ]; then
+    say ""
+    dbgdump "t=${t}s WEDGED (rx flat ${STALL}s)"
+    say "  irq line: $(grep -i dwc2 /proc/interrupts)"
+    say ""
+    SNAPPED=1
   fi
-  say "$(printf '%-7s %-12s %-12s %-10s %s' "$t" "$R" "$T" "${C:-?}" "$NOTE")"
-  # dmesg snapshot every 60s so we catch the moment it wedges
-  if [ $((t % 60)) -eq 0 ] && [ "$t" -gt 0 ]; then
-    say "  --- dmesg @ t=${t}s ---"
-    say "$(dwc | tail -12)"
-  fi
-  PREV_RX=$R
+  PREV_RX=$R; PREV_IRQ=$Q
   sleep 10
 done
 
+[ -n "$TCPD" ] && kill $TCPD 2>/dev/null
 say ""
-[ -n "$FROZE" ] && say ">>> RX FROZE AT $FROZE PACKETS" || say ">>> RX never stalled 30s+"
+dbgdump "t=360s (final)"
 say ""
-say "########## dmesg AFTER (full dwc2/gadget history) ##########"
-say "$(dwc | tail -80)"
+say "########## usb0 full statistics ##########"
+for f in /sys/class/net/usb0/statistics/*; do
+  say "  $(basename "$f") = $(cat "$f" 2>/dev/null)"
+done
 say ""
-say "########## ep_stop_xfr / txfifo_flush (PR#31 signature) ##########"
-say "$(dmesg -T 2>/dev/null | grep -iE 'ep_stop_xfr|txfifo_flush|Timeout|failed' | tail -40)"
-say "(empty above = the wedge logs nothing, which PR#31 also handles)"
+say "########## dmesg AFTER ##########"
+say "$(dwc | tail -60)"
 say ""
-say "########## ics-watch ##########"
-say "$(journalctl -u rpi-usb-gadget-ics -n 60 --no-pager 2>&1 | tail -60)"
+say "########## anything logged at all since boot (errors) ##########"
+say "$(dmesg -T 2>/dev/null | grep -iE 'error|fail|halt|stall|timeout|reset|overflow|babble' | tail -30)"
 say ""
-say "########## network ##########"
-say "$(ip -br addr 2>/dev/null)"
-say "$(ip -s link show usb0 2>/dev/null)"
-say "$(nmcli -t connection show 2>/dev/null)"
+say "########## pcap ##########"
+say "  $(ls -la $B/usb0.pcap 2>/dev/null || echo 'no pcap')"
 say "===== end ====="
 sync
 
