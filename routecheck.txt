@@ -1,0 +1,32 @@
+=== before ===
+	ether 92:6a:f9:36:cf:0e
+	inet 169.254.158.90 netmask 0xffff0000 broadcast 169.254.255.255
+routes via en7: 4
+=== applying ===
+=== after (addresses must still be here; if they vanish, InternetSharing stripped them) ===
+	inet 169.254.158.90 netmask 0xffff0000 broadcast 169.254.255.255
+	inet 192.168.2.1 netmask 0xffffff00 broadcast 192.168.2.255
+	inet 10.12.194.2 netmask 0xfffffff0 broadcast 10.12.194.15
+
+=== IPv4 routes via en7 ===
+10.12.194/28       link#43            UC                    en7      !
+169.254            link#43            UCSI                  en7      !
+169.254.158.90/32  link#43            UCS                   en7      !
+192.168.2          link#43            UC                    en7      !
+224.0.0/4          link#43            UmCSI                 en7      !
+224.0.0.251        1:0:5e:0:0:fb      UHmLWI                en7       
+255.255.255.255/32 link#43            UCSI                  en7      !
+
+=== does 192.168.2.2 route out en7 or out en0? ===
+destination: 192.168.2.0
+  interface: en7
+=== does 10.12.194.1 route out en7 or out en0? ===
+destination: 10.12.194.0
+  interface: en7
+
+VERDICT:
+  on-link route EXISTS -> traffic is reaching en7; the stall is real USB
+
+=== generating traffic for the Pi's sampling window ===
+Opkts now: 146
+arp: ? (10.12.194.1) at 72:90:c6:40:cc:a5 on en7 ifscope [ethernet] ? (169.254.158.90) at 92:6a:f9:36:cf:e on en7 permanent [ethernet] ? (192.168.2.2) at (incomplete) on en7 ifscope [ethernet] ? (224.0.0.251) at 1:0:5e:0:0:fb on en7 ifscope permanent [ethernet] 

@@ -37,6 +37,67 @@ Pi modes, for reference:
   upstream. Useless here: the Pi has no upstream.
 - **client** — Pi DHCPs from our gateway. This is what we want.
 
+## The 161 cap is the whole story (2026-09-01, session 9)
+
+Three theories proposed and killed in one session: `dr_mode`, a null MAC, and missing
+routes. What survives all three is the number.
+
+`Opkts` counts up normally from interface creation and stops at **exactly 161**, every
+enumeration, forever. Sixty seconds of active pinging with routes verified present:
+
+```
+t=5s   Ipkts=170  Opkts=161
+t=20s  Ipkts=183  Opkts=161
+t=40s  Ipkts=201  Opkts=161
+t=60s  Ipkts=219  Opkts=161
+```
+
+### Routing was not the problem
+
+Worth recording because it looked convincing for about ten minutes. With the addresses
+applied, the on-link routes are present and correct:
+
+```
+10.12.194/28   link#43   UC   en7
+192.168.2      link#43   UC   en7
+route -n get 192.168.2.2  -> interface: en7
+route -n get 10.12.194.1  -> interface: en7
+```
+
+Traffic is being handed to `en7`. It still stops at 161.
+
+**A resolved ARP entry does not prove delivery.** `arp -an` showed `10.12.194.1` at the
+Pi's MAC, which looked like a successful round trip. It is not: the Pi broadcasts
+`who-has ... tell 10.12.194.1` every couple of seconds and macOS caches the *sender's*
+address from an incoming request without transmitting anything. Ping is the honest
+test, and it fails.
+
+### Current best explanation: a leaked Skywalk TX packet pool
+
+A counter that halts at a fixed number across nine independent enumerations, with
+`Oerrs=0` and nothing logged anywhere, is a fixed-size resource being exhausted and
+never replenished. `AppleUserECM` is a DriverKit dext sitting on `IOSkywalkFamily`,
+which allocates a fixed TX packet pool at attach.
+
+If transmitted packets are never returned to that pool, it runs dry at 161 and the
+interface can never transmit again until a replug builds a fresh dext instance.
+
+Consistent with everything observed:
+
+| observation | fits? |
+|---|---|
+| identical count across both dr_modes | yes, host-side resource |
+| identical with and without routes | yes |
+| RX unaffected and continuous | yes, separate pool |
+| `Oerrs=0`, nothing in any log | yes, allocation failure is not an error |
+| only a replug clears it | yes, new dext, new pool |
+| `BRDGADD` / `BIOCPROMISC` `ETIMEDOUT` | yes, control ops blocking on an exhausted dext |
+
+Unproven. It is inference from the failure's shape, not from Apple's source.
+
+**If this holds, this is an Apple bug, not an `rpi-usb-gadget` bug**, and the upstream
+comments on #27 and PR #31 need withdrawing rather than correcting.
+
 ## Retest with dr_mode=peripheral: byte-identical failure (2026-09-01)
 
 The `config.txt` fix took, and it changed nothing.
