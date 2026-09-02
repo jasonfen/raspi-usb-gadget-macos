@@ -349,10 +349,11 @@ Fixed on the card: `[all]` now carries `dtoverlay=dwc2,dr_mode=peripheral`, the
 comment is restored, and the file ends with a newline. Backup in
 `boot-backup/config.txt.pre-drmode-fix`.
 
-**This is a third upstream packaging bug**, and worse than the other two: the installer
-appends to `config.txt` without a newline guard and without forcing an `[all]` filter.
-Any image whose `config.txt` ends in a comment or a model filter gets a silently
-inert gadget.
+**Filed upstream as [rpi-usb-gadget#32](https://github.com/raspberrypi/rpi-usb-gadget/issues/32).**
+The installer appends to `config.txt` without a newline guard and without forcing an
+`[all]` filter, so any image whose `config.txt` ends in a comment or a model filter gets
+a silently inert gadget. The removal `sed` is anchored to the whole line, so once fused
+the line also cannot be deduped, turned off, or uninstalled.
 
 ### Everything below is PENDING RETEST
 
