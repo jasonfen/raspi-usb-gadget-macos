@@ -399,9 +399,11 @@ host's packets never arrive.
 on macOS never actually submitting or completing the OUT transfers while counting them
 as sent. Not proven from counters on either end.
 
-Reported upstream:
+Reported upstream, then **withdrawn** once the fault was traced to macOS:
 [#27 comment](https://github.com/raspberrypi/rpi-usb-gadget/issues/27#issuecomment-5500820194),
 [PR #31 comment](https://github.com/raspberrypi/rpi-usb-gadget/pull/31#issuecomment-5500820418).
+Withdrawals: [#27](https://github.com/raspberrypi/rpi-usb-gadget/issues/27#issuecomment-5502370421),
+[PR #31](https://github.com/raspberrypi/rpi-usb-gadget/pull/31#issuecomment-5502370952).
 
 ### Do not trust Opkts
 
