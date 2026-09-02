@@ -4,13 +4,13 @@
 > theories below with the reason they were dropped. Read [`README.md`](README.md) for
 > the conclusion; read this for how it was reached and what was ruled out along the way.
 >
-> Sections marked **SUPERSEDED** are wrong. They are kept deliberately — several of them
+> Sections marked **SUPERSEDED** are wrong. They are kept deliberately: several of them
 > were wrong in instructive ways, and one (`Do not trust Opkts`) is the reason the final
 > measurement was designed the way it was.
 
 
 Pi runs [rpi-usb-gadget](https://github.com/raspberrypi/rpi-usb-gadget) (PiOS trixie).
-The USB cable is the Pi's **only** connection — it has no upstream of its own.
+The USB cable is the Pi's **only** connection; it has no upstream of its own.
 
 ## Why not just use macOS Internet Sharing
 
@@ -23,7 +23,7 @@ mis_bridge_add_int_if: add_bridge_member, err 60   # ETIMEDOUT
 ```
 
 Without the bridge there's no address, no NAT, no DHCP. `launchctl kickstart` can't
-restart the daemon either — SIP blocks it (`150: Operation not permitted`). Only a
+restart the daemon either; SIP blocks it (`150: Operation not permitted`). Only a
 reboot clears a wedged `InternetSharing` process.
 
 ## How this works instead
@@ -35,16 +35,16 @@ So we present that by hand and skip Internet Sharing entirely:
 | Piece | What it does |
 |---|---|
 | `192.168.2.1/24` on the gadget interface | the address the Pi's watcher probes for |
-| `bootpd` scoped to that interface | leases `192.168.2.2–20`, router `.1`, DNS `1.1.1.1` |
+| `bootpd` scoped to that interface | leases `192.168.2.2-20`, router `.1`, DNS `1.1.1.1` |
 | `net.inet.ip.forwarding=1` | route between the Pi and Wi-Fi |
 | pf anchor `pi-nat` | `nat on en0 from 192.168.2.0/24 -> (en0)` |
 
 No bridge anywhere, so the `BRDGADD` bug never comes into play.
 
 Pi modes, for reference:
-- **shared** (default) — Pi takes `10.12.194.1/28`, runs its own DHCP, NATs to *its*
+- **shared** (default): Pi takes `10.12.194.1/28`, runs its own DHCP, NATs to *its*
   upstream. Useless here: the Pi has no upstream.
-- **client** — Pi DHCPs from our gateway. This is what we want.
+- **client**: Pi DHCPs from our gateway. This is what we want.
 
 ## PROVEN: the Pi never sees the packets, and it is not at fault
 
@@ -58,7 +58,7 @@ addresses, both on-link routes, and pinging continuously throughout.
 
 The discriminator was the dwc2 interrupt count sampled next to the packet counters.
 **Every 10s interval across the whole run, the dwc2 IRQ delta exactly equals the
-tx_packets delta — 36 consecutive matches, no exceptions:**
+tx_packets delta, 36 consecutive matches, no exceptions:**
 
 ```
 t(s)   rx_packets  tx_packets  dwc2_irq     note
@@ -70,7 +70,7 @@ t(s)   rx_packets  tx_packets  dwc2_irq     note
 
 Every interrupt the controller raises is accounted for by an outbound completion. Not
 one is attributable to an inbound transfer. The controller is fully alive, interrupting
-normally, all 360 seconds — and it never once sees data arrive from the host.
+normally, all 360 seconds, and it never once sees data arrive from the host.
 
 Device-side error counters, final:
 
@@ -100,11 +100,11 @@ repo arguable.
 - **Withdraw** the comments on rpi-usb-gadget #27 and PR #31. They point maintainers at
   a bug that is not theirs. The two packaging bugs found along the way (blank
   `iSerialNumber`, missing `host_addr`/`dev_addr`) are real and worth filing separately,
-  as is the `config.txt` append bug — but none of them cause this.
+  as is the `config.txt` append bug, but none of them cause this.
 - **File with Apple** (Feedback Assistant): CDC ECM gadget, `AppleUserECM` /
   `IOSkywalkFamily`, TX halts permanently after exactly 161 packets per enumeration,
   `Oerrs=0`, nothing logged, cleared only by replug. macOS 27.0 beta (26A5421a).
-- **For actual networking**, stop here and use Wi-Fi, or try NCM — a different macOS
+- **For actual networking**, stop here and use Wi-Fi, or try NCM: a different macOS
   driver, and the one remaining cheap shot at making USB work.
 
 ### Notes on the instruments
@@ -113,7 +113,7 @@ repo arguable.
   IRQ count from `/proc/interrupts` answered the question better anyway.
 - The `dwc2` IRQ line matches on `3f980000`, not the string `dwc2`, so a `grep -i dwc2`
   on `/proc/interrupts` returns nothing here.
-- tcpdump started on the Pi but wrote no pcap. Not needed — only one frame ever arrived.
+- tcpdump started on the Pi but wrote no pcap. Not needed; only one frame ever arrived.
 
 ## The 161 cap is the whole story (2026-09-01, session 9)
 
@@ -180,7 +180,7 @@ comments on #27 and PR #31 need withdrawing rather than correcting.
 
 The `config.txt` fix took, and it changed nothing.
 
-**Proof the fix applied** — four lines present in the otg run are absent in the
+**Proof the fix applied**: four lines present in the otg run are absent in the
 peripheral run. They are the dwc2 *host controller* registration, which peripheral-only
 mode does not perform:
 
@@ -216,7 +216,7 @@ never recovers, in either mode, across eight sessions.
 The most economical reading: the gadget's OUT endpoint takes one packet and never
 re-arms, so the host's OUT transfers stop completing, its queue backs up, and `Opkts`
 freezes at 161. That makes the frozen host counter a *consequence* of the device-side
-stall rather than an independent macOS fault — and it means the earlier "macOS never
+stall rather than an independent macOS fault, and it means the earlier "macOS never
 transmits" framing had the causality backwards.
 
 Not yet collected, and the obvious next step: `/sys/kernel/debug/dwc2/` endpoint state
@@ -228,8 +228,8 @@ Evidence: `diag3-peripheral.txt`.
 
 ## ROOT CAUSE: the Mac never puts a frame on the wire (2026-09-01)
 
-`en7` transmits nothing at all. Not "the packets are queued and lost somewhere" —
-nothing is ever emitted.
+`en7` transmits nothing at all. Not "the packets are queued and lost somewhere".
+Nothing is ever emitted.
 
 tcpdump on `en7`, 10s, while actively generating traffic (broadcast ping, unicast
 ping, a ping to an unresolved address to force a fresh ARP):
@@ -243,7 +243,7 @@ ping, a ping to an unresolved address to force a fresh ARP):
 outbound frames from this Mac: 0
 ```
 
-All five are inbound from the Pi. Zero outbound — including the `arp-responder.py`
+All five are inbound from the Pi. Zero outbound, including the `arp-responder.py`
 BPF injections, which logged 111 replies sent over the same window. BPF writes do not
 reach the wire either.
 
@@ -254,7 +254,7 @@ Paired counters over 400s (`hostside.txt` + `diag2.txt`):
 | Pi -> Mac | Ipkts 143 -> 421 | tx climbing |
 | Mac -> Pi | Opkts **161, flat, Oerrs 0** | rx ~0 |
 
-A broadcast ping — which needs no ARP resolution and must hit the wire — moves `Opkts`
+A broadcast ping, which needs no ARP resolution and must hit the wire, moves `Opkts`
 by exactly 0.
 
 ### Instrument control (run this before trusting any capture)
@@ -303,7 +303,7 @@ BIOCPROMISC: Operation timed out          # tcpdump, this session
 mis_bridge_add_int_if: ... err 60         # InternetSharing BRDGADD, earlier
 ```
 
-So the Internet Sharing bridge failure is not a separate bug to work around — it is
+So the Internet Sharing bridge failure is not a separate bug to work around; it is
 the same fault. The stack is `AppleUSBCDCCompositeDevice` -> `AppleUserECM` (DriverKit)
 -> `IOSkywalkLegacyEthernet` -> `IOSkywalkNetworkBSDClient`.
 
@@ -351,7 +351,7 @@ Two independent failures in one line:
 
 The only dwc2 line that actually applied was `dtoverlay=dwc2` under `[all]`, which
 defaults `dr_mode` to **otg**. dmesg agrees: `DWC OTG Controller`, and nothing
-declaring peripheral mode. It still enumerates, because ID floats to B-device — which
+declaring peripheral mode. It still enumerates, because ID floats to B-device, which
 is exactly why this went unnoticed for the whole investigation.
 
 Fixed on the card: `[all]` now carries `dtoverlay=dwc2,dr_mode=peripheral`, the
@@ -368,7 +368,7 @@ the line also cannot be deduped, turned off, or uninstalled.
 
 > The host->device analysis that follows was measured against a controller running the
 > OTG state machine instead of hard peripheral mode. The counters are real, but the
-> conclusion drawn from them — that macOS queues OUT transfers it never delivers — now
+> conclusion drawn from them, that macOS queues OUT transfers it never delivers, now
 > rests on an untested premise. Same class of error as the `Opkts` trap: the
 > instrument was fine, the setup underneath it was not.
 >
@@ -463,7 +463,7 @@ per USB enumeration. Measured three times across three independent replugs:
 | session | Opkts at wedge | Obytes | Oerrs |
 |---|---|---|---|
 | 1 | 161 | 40372 | 0 |
-| 2 | 161 | — | 0 |
+| 2 | 161 | not recorded | 0 |
 | 3 (started at 114) | 161 | 39990 | 0 |
 
 `Obytes` differs while `Opkts` is identical, so the cap is on **packet count**, not
@@ -472,7 +472,7 @@ working indefinitely, `Oerrs=0`, the dext is alive with near-zero CPU, and nothi
 logged. It fails completely silently.
 
 Nothing fixes it: interface bounce, disabling TSO/offloads, MTU change, re-adding
-addresses. Only a replug resets the counter — buying another 161 packets.
+addresses. Only a replug resets the counter, buying another 161 packets.
 
 **Everything else in this repo is downstream of this.** The Internet Sharing
 `BRDGADD` timeout is a symptom (bridge-add needs to transmit). So is every unanswered
@@ -490,9 +490,9 @@ B=$(netstat -I en7 -b | awk 'NR==2{print $8}')
 [ "$B" -gt "$A" ] && echo "TX alive" || echo "TX WEDGED at $B -- all send-tests are void"
 ```
 
-Tests invalidated by not doing this: BPF-injection-is-blocked (false — injection works
+Tests invalidated by not doing this: BPF-injection-is-blocked (false: injection works
 fine on a fresh interface, all three methods transmit), and macOS-won't-ARP-reply-
-off-subnet (unproven — every zero-reply capture was taken while TX was dead).
+off-subnet (unproven: every zero-reply capture was taken while TX was dead).
 
 ### Second, independent problem
 
@@ -506,7 +506,7 @@ Dead on macOS 27.0 beta. 161 packets per replug is unusable. Use the SD card ins
 configure the Zero 2 W's built-in Wi-Fi, or switch the gadget from ECM to NCM so a
 different macOS driver handles it.
 
-A Mac-side USB ethernet dongle does NOT help — the Zero 2 W has no ethernet port and
+A Mac-side USB ethernet dongle does NOT help; the Zero 2 W has no ethernet port and
 its single OTG port is the link to the Mac.
 
 ## The ARP theory (unproven, kept for reference)
@@ -527,11 +527,11 @@ Windows both do. So the Pi's detection works on those hosts and silently fails h
 and the Pi stays in shared mode forever.
 
 Things that do NOT fix it:
-- adding a `10.12.194.2/28` alias so the sender is on-link — macOS still scopes ARP
+- adding a `10.12.194.2/28` alias so the sender is on-link: macOS still scopes ARP
   replies per address-subnet
-- `arp -s 192.168.2.1 <mac> pub` — rejected, "proxy entry exists for non 802 device",
+- `arp -s 192.168.2.1 <mac> pub`: rejected, "proxy entry exists for non 802 device",
   because the address is already ours
-- `net.link.ether.inet.proxyall=1` — untested on purpose. It is global, and on a
+- `net.link.ether.inet.proxyall=1`: untested on purpose. It is global, and on a
   corporate LAN it can make this Mac answer ARP for addresses it shouldn't. Don't.
 
 What works: `arp-responder.py` opens a BPF device and emits the reply itself,
@@ -540,7 +540,7 @@ accepts at layer 2.
 
 **Open issue:** the Pi receives the replies but does not flip to client mode when it
 has already booted into shared mode. The responder must be running *before* the Pi's
-first probe — hence `full-setup.sh`, which is run right after a replug.
+first probe, hence `full-setup.sh`, which is run right after a replug.
 
 ## Usage
 
@@ -606,7 +606,7 @@ only reliable fix. `ics-emulate.sh` polls 5× and aborts rather than continuing 
 stripped address.
 
 **If `IOUSBHostInterface nubs` is 0**, the gadget enumerated without composing its USB
-functions — usually the Mac read its descriptors before the Pi finished booting.
+functions, usually because the Mac read its descriptors before the Pi finished booting.
 Replug the cable; reboot the Pi if that doesn't fix it. No host-side config can help.
 
 **Count nubs in the `IOService` plane, not `IOUSB`.** `ioreg -p IOUSB` does not include
@@ -616,7 +616,7 @@ interface nubs and always reports 0, which looks exactly like a failed gadget. U
 ioreg -p IOService -w0 -r -n "Raspberry Pi USB Gadget" | grep -c IOUSBHostInterface
 ```
 
-A healthy device shows the full chain — `CDC Ethernet Control Model (ECM)` ->
+A healthy device shows the full chain: `CDC Ethernet Control Model (ECM)` ->
 `AppleUserECM` -> `en7`. The real ground truth is simply whether the BSD interface
 exists; trust that over any registry count.
 
@@ -632,7 +632,7 @@ sweep in this repo. Use background + kill instead:
 cmd > out 2>&1 & P=$!; sleep N; kill $P 2>/dev/null; wait $P 2>/dev/null
 ```
 
-Never let a diagnostic's failure to run look like a finding — `capture.sh` now checks
+Never let a diagnostic's failure to run look like a finding. `capture.sh` now checks
 for tcpdump errors explicitly and distinguishes them from a silent wire.
 
 ## Diagnosing
@@ -641,7 +641,7 @@ for tcpdump errors explicitly and distinguishes them from a silent wire.
 # is the TX path alive? Opkts should climb, not sit frozen
 netstat -I "$(cat .gadget-if)" -b | awk 'NR==2{print "Ipkts="$5" Opkts="$8}'
 
-# is an address actually applied? SystemConfiguration lies — trust ifconfig
+# is an address actually applied? SystemConfiguration lies, trust ifconfig
 ifconfig "$(cat .gadget-if)" | grep "inet "
 networksetup -getinfo "Raspberry Pi USB Gadget"
 
