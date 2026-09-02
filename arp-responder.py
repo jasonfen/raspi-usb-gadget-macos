@@ -68,8 +68,16 @@ def main():
     while True:
         try:
             buf = os.read(fd, blen)
-        except OSError:
+        except InterruptedError:
             continue
+        except OSError as e:
+            # The fd is bound to a specific interface instance. A replug or
+            # re-enumeration destroys that instance, after which every read
+            # fails immediately -- retrying just spins at 100% CPU. Bail and
+            # let the caller restart us against the new interface.
+            print(f"[arp-responder] read failed: {e}. Interface was likely "
+                  f"re-enumerated; exiting so it can be restarted.", flush=True)
+            raise SystemExit(1)
         off = 0
         while off + 18 <= len(buf):
             # struct bpf_hdr: timeval32(8) caplen(4) datalen(4) hdrlen(2)

@@ -572,6 +572,15 @@ Scripts share the detected interface name via `.gadget-if`.
 
 ## Gotchas
 
+**`arp-responder.py` dies silently on replug, and used to spin at 100% CPU.** Its BPF
+fd is bound to one interface *instance*. A replug destroys that instance, every
+subsequent `os.read` fails immediately, and the original `except OSError: continue`
+turned that into a busy loop. Found one burning a full core for an hour, its log frozen
+at the exact moment the Pi re-enumerated. It now exits with a message instead. Restart
+it after every replug, and check `pgrep -f arp-responder.py` before trusting that
+replies are still being sent.
+
+
 **Nothing here survives a reboot.** `ip.forwarding` resets and pf won't auto-load
 `/etc/pf-pi.conf`. Re-run `ics-emulate.sh`. (`/etc/bootpd.plist` does persist.)
 
