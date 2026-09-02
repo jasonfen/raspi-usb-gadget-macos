@@ -1,16 +1,18 @@
-# A pwnagotchi cannot get internet over USB from macOS 27 beta
+# A Raspberry Pi USB ethernet gadget cannot get internet from macOS 27 beta
 
-**Short version:** plug a pwnagotchi into a Mac running macOS 27.0 beta and the USB
-network link comes up, gets an IP, and then transmits nothing. Not slowly — nothing.
-macOS' CDC ECM driver reports 161 packets sent; the Pi's USB controller registers
+**Short version:** plug a Raspberry Pi running USB ethernet gadget mode into a Mac on
+macOS 27.0 beta and the link comes up, gets an IP, and then transmits nothing. Not
+slowly — nothing. macOS' CDC ECM driver reports 161 packets sent; the Pi's USB
+controller registers
 exactly **one** inbound packet, ever. No error, no log line, on either side.
 
-This is a macOS defect. It is not pwnagotchi's fault, not `rpi-usb-gadget`'s fault,
-and no amount of host-side configuration fixes it. Filed with Apple as
+This is a macOS defect. Nothing on the Pi is at fault — not Raspberry Pi OS, not
+`g_ether`, not dwc2, not `rpi-usb-gadget` — and no amount of host-side configuration
+fixes it. Filed with Apple as
 [FB24614121](https://feedbackassistant.apple.com/feedback/24614121).
 
-If you are here because your pwnagotchi won't take a lease from your Mac: skip to
-[What to do instead](#what-to-do-instead).
+If you are here because your Pi won't take a DHCP lease from your Mac over USB: skip
+to [What to do instead](#what-to-do-instead).
 
 ---
 
@@ -132,8 +134,9 @@ Note: `g_ncm` does **not** exist in the current PiOS trixie kernel — only `usb
 the configfs function — so `modules-load=dwc2,g_ncm` cannot work. It has to be built
 through configfs.
 
-**3. Bluetooth.** pwnagotchi ships a `bt-tether` plugin. Not tested here, and macOS
-Bluetooth PAN is its own adventure, but it does not touch the broken code path.
+**3. Bluetooth PAN instead of USB. (Untested.)**
+bluez on the Pi side, macOS Bluetooth sharing on the other. Its own adventure to set
+up, but it does not touch the broken code path.
 
 **Not a workaround: replugging.** The 161-packet allowance is phantom. The device
 receives one packet per enumeration regardless, so there is no window in which the link
@@ -141,7 +144,8 @@ works.
 
 ## Two real upstream bugs found along the way
 
-Neither causes the above. Both are genuine and both affect shipped pwnagotchi images.
+Neither causes the above. Both are genuine, and both survive into shipped images
+rather than being install-time-only mistakes.
 
 **`config.txt` append corruption —
 [rpi-usb-gadget#32](https://github.com/raspberrypi/rpi-usb-gadget/issues/32).**
@@ -154,8 +158,8 @@ line — inside a comment:
 ```
 
 …and landed under a `[pi5]` filter, on a Zero 2 W (`[pi02]`). The setting was inert.
-It goes unnoticed because the bare `dtoverlay=dwc2` under `[all]` that pwnagotchi
-images ship still brings dwc2 up, defaulting to `otg`, where the floating ID pin
+It goes unnoticed because a bare `dtoverlay=dwc2` under `[all]` — which many gadget
+images already carry — still brings dwc2 up, defaulting to `otg`, where the floating ID pin
 settles into device mode anyway. The gadget enumerates and looks healthy. Worse: the
 uninstall `sed` is anchored to the whole line, so once fused the line cannot be
 deduped, disabled, or removed.
@@ -226,7 +230,7 @@ its evidence list).
 The full chronological notebook, including every theory that turned out to be wrong and
 why, is in **[`INVESTIGATION.md`](INVESTIGATION.md)**.
 
-## Getting data off a pwnagotchi with no working link
+## Getting data off a headless Pi with no working link
 
 Useful well beyond this bug. USB was the only path in and it was broken, so device-side
 data came from a one-shot systemd service written to the FAT boot partition from macOS
@@ -248,7 +252,7 @@ unplug loses everything buffered.
 | | |
 |---|---|
 | Host | Apple Silicon Mac, macOS 27.0 beta (build 26A5421a), upstream Wi-Fi `en0` |
-| Device | Pi Zero 2 W, pwnagotchi image on Raspberry Pi OS trixie, kernel 6.18.39+rpt-rpi-v8 |
+| Device | Pi Zero 2 W, Raspberry Pi OS trixie, kernel 6.18.39+rpt-rpi-v8 |
 | Gadget | [`rpi-usb-gadget`](https://github.com/raspberrypi/rpi-usb-gadget), `g_ether` → CDC ECM |
 
 Not tested on macOS 26 or earlier, on Intel Macs, or on other Pi models. If you have
