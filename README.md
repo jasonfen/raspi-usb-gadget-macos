@@ -2,12 +2,11 @@
 
 **Short version:** plug a Raspberry Pi running USB ethernet gadget mode into a Mac on
 macOS 27.0 beta and the link comes up, gets an IP, and then transmits nothing. Not
-slowly — nothing. macOS' CDC ECM driver reports 161 packets sent; the Pi's USB
-controller registers
-exactly **one** inbound packet, ever. No error, no log line, on either side.
+slowly. Nothing. macOS' CDC ECM driver reports 161 packets sent; the Pi's USB
+controller registers exactly **one** inbound packet, ever. No error, no log line, on either side.
 
-This is a macOS defect. Nothing on the Pi is at fault — not Raspberry Pi OS, not
-`g_ether`, not dwc2, not `rpi-usb-gadget` — and no amount of host-side configuration
+This is a macOS defect. Nothing on the Pi is at fault: not Raspberry Pi OS, not
+`g_ether`, not dwc2, not `rpi-usb-gadget`. No amount of host-side configuration
 fixes it. Filed with Apple as
 [FB24614121](https://feedbackassistant.apple.com/feedback/24614121).
 
@@ -20,7 +19,7 @@ to [What to do instead](#what-to-do-instead).
 
 | | |
 |---|---|
-| Gadget enumerates | yes — `Raspberry Pi USB Gadget` in System Information, `en7` appears |
+| Gadget enumerates | yes, `Raspberry Pi USB Gadget` in System Information, `en7` appears |
 | `ifconfig` | interface `UP,RUNNING`, `status: active`, carrier present |
 | Ping the Pi | 100% loss |
 | `netstat -I en7 -b` | `Opkts` climbs to **161**, then freezes forever. `Oerrs 0` |
@@ -49,7 +48,7 @@ t(s)   rx_packets  tx_packets  dwc2_irq     note
 ```
 
 Across all 36 ten-second intervals, **the dwc2 interrupt delta exactly equals the
-`tx_packets` delta — 36 matches, no exceptions.** Every interrupt the controller
+`tx_packets` delta: 36 matches, no exceptions.** Every interrupt the controller
 raised is accounted for by an outbound completion. Not one is attributable to an
 inbound transfer.
 
@@ -65,7 +64,7 @@ Confirmed independently on the Mac with a packet capture, against a control:
 | `en7` (gadget) | 3 | **0** |
 
 BPF outbound visibility works fine on this Mac. The zero on `en7` is real. Even a
-broadcast ping — which needs no ARP resolution and must hit the wire — moves `Opkts`
+broadcast ping, which needs no ARP resolution and must hit the wire, moves `Opkts`
 by exactly zero.
 
 **Conclusion: the packets never leave the Mac.**
@@ -78,21 +77,21 @@ AppleUSBCDCCompositeDevice → AppleUserECM (DriverKit) → IOSkywalkLegacyEther
                               fails here
 ```
 
-The best available explanation — inference from the failure's shape, not from Apple's
-source — is a **leaked Skywalk TX packet pool**. `AppleUserECM` is a DriverKit dext on
+The best available explanation, inference from the failure's shape rather than from
+Apple's source, is a **leaked Skywalk TX packet pool**. `AppleUserECM` is a DriverKit dext on
 `IOSkywalkFamily`, which allocates a fixed-size TX packet pool at attach. If sent
 packets are never returned to the pool, it runs dry at a fixed count and the interface
 can never transmit again until a replug builds a fresh dext.
 
 | observation | consistent? |
 |---|---|
-| halts at exactly 161 across nine independent enumerations | yes — fixed-size resource |
-| identical with `dr_mode=otg` and `dr_mode=peripheral` | yes — host-side |
+| halts at exactly 161 across nine independent enumerations | yes, fixed-size resource |
+| identical with `dr_mode=otg` and `dr_mode=peripheral` | yes, host-side |
 | identical with and without routes configured | yes |
-| RX unaffected and continuous | yes — separate pool |
-| `Oerrs=0`, nothing logged anywhere | yes — allocation failure is not an error |
-| only a replug clears it | yes — new dext, new pool |
-| Internet Sharing `BRDGADD` and `BIOCPROMISC` both `ETIMEDOUT` | yes — control ops blocking on an exhausted dext |
+| RX unaffected and continuous | yes, separate pool |
+| `Oerrs=0`, nothing logged anywhere | yes, allocation failure is not an error |
+| only a replug clears it | yes, new dext, new pool |
+| Internet Sharing `BRDGADD` and `BIOCPROMISC` both `ETIMEDOUT` | yes, control ops blocking on an exhausted dext |
 
 That last row matters: the Internet Sharing bridge failure is not a separate bug to
 work around. It is this bug, seen from the control plane.
@@ -101,21 +100,21 @@ work around. It is this bug, seen from the control plane.
 
 Recorded so nobody re-runs them. Each was tested and killed:
 
-- **`dr_mode`** — the controller really was in `otg` instead of `peripheral` for most
+- **`dr_mode`**: the controller really was in `otg` instead of `peripheral` for most
   of this investigation (a genuine `config.txt` bug, see below). Fixed it. Failure is
   byte-identical.
-- **A null source MAC** — `en7` was once seen with `02:00:00:00:00:00`, which looked
+- **A null source MAC**: `en7` was once seen with `02:00:00:00:00:00`, which looked
   decisive. It is a transient init state; with the correct MAC applied, TX is still dead.
-- **Descriptor / MAC negotiation** — ECM host-MAC negotiation completes correctly and
+- **Descriptor / MAC negotiation**: ECM host-MAC negotiation completes correctly and
   macOS adopts the advertised address. Verified against `ioreg`.
-- **Missing or wrong routes** — on-link routes present and correct, `route -n get`
+- **Missing or wrong routes**: on-link routes present and correct, `route -n get`
   resolves to the gadget interface. Still 161.
-- **A DHCP timing race** — DHCP cannot complete when the host's packets never arrive.
-- **NO-CARRIER on the Pi** — `carrier=1` on every sample.
-- **Interface bounce, MTU changes, disabling TSO/offloads, re-adding addresses** — no effect.
-- **A USB-ethernet dongle on the Mac** — irrelevant. The Zero 2 W has no ethernet port
+- **A DHCP timing race**: DHCP cannot complete when the host's packets never arrive.
+- **NO-CARRIER on the Pi**: `carrier=1` on every sample.
+- **Interface bounce, MTU changes, disabling TSO/offloads, re-adding addresses**: no effect.
+- **A USB-ethernet dongle on the Mac**: irrelevant. The Zero 2 W has no ethernet port
   and its single OTG port *is* the link.
-- **A resolved `arp -an` entry** — looks like a successful round trip, isn't. macOS
+- **A resolved `arp -an` entry**: looks like a successful round trip, isn't. macOS
   caches the sender address from the Pi's inbound ARP requests without transmitting
   anything. Ping is the honest test.
 
@@ -124,15 +123,15 @@ Recorded so nobody re-runs them. Each was tested and killed:
 Ranked by how likely they are to actually work. Only the first is confirmed.
 
 **1. Use a different host for the USB link. (Confirmed working.)**
-Linux hosts drive the same gadget correctly — this is the same failure pattern
+Linux hosts drive the same gadget correctly. This is the same failure pattern
 [rpi-usb-gadget#19](https://github.com/raspberrypi/rpi-usb-gadget/issues/19) reports
 working against a NixOS host. If you have any non-Mac machine, use it.
 
 **2. Switch the gadget off CDC ECM, so a different macOS driver handles it. (Untested.)**
 The bug is in `AppleUserECM` specifically. NCM binds a different macOS driver.
-Note: `g_ncm` does **not** exist in the current PiOS trixie kernel — only `usb_f_ncm`,
-the configfs function — so `modules-load=dwc2,g_ncm` cannot work. It has to be built
-through configfs.
+Note: the current PiOS trixie kernel has no `g_ncm`, only `usb_f_ncm`, the configfs
+function. So `modules-load=dwc2,g_ncm` cannot work; it has to be built through
+configfs.
 
 **3. Bluetooth PAN instead of USB. (Untested.)**
 bluez on the Pi side, macOS Bluetooth sharing on the other. Its own adventure to set
@@ -147,30 +146,30 @@ works.
 Neither causes the above. Both are genuine, and both survive into shipped images
 rather than being install-time-only mistakes.
 
-**`config.txt` append corruption —
+**`config.txt` append corruption:
 [rpi-usb-gadget#32](https://github.com/raspberrypi/rpi-usb-gadget/issues/32).**
 The installer appends to `config.txt` with no newline guard and no `[all]` filter. On
 this image the file had no trailing newline, so the append fused onto the previous
-line — inside a comment:
+line, inside a comment:
 
 ```
 #dtoverlay=disable-wifidtoverlay=dwc2,dr_mode=peripheral
 ```
 
 …and landed under a `[pi5]` filter, on a Zero 2 W (`[pi02]`). The setting was inert.
-It goes unnoticed because a bare `dtoverlay=dwc2` under `[all]` — which many gadget
-images already carry — still brings dwc2 up, defaulting to `otg`, where the floating ID pin
+It goes unnoticed because a bare `dtoverlay=dwc2` under `[all]`, which many gadget
+images already carry, still brings dwc2 up, defaulting to `otg`, where the floating ID pin
 settles into device mode anyway. The gadget enumerates and looks healthy. Worse: the
 uninstall `sed` is anchored to the whole line, so once fused the line cannot be
 deduped, disabled, or removed.
 
 **Blank `iSerialNumber`, no `host_addr`/`dev_addr`.**
 `/usr/lib/modprobe.d/g_ether.conf` ships with an empty serial, while `/proc/cpuinfo` on
-the running board has a real one — so it was stamped blank at image build time (likely
+the running board has a real one, so it was stamped blank at image build time (likely
 a chroot, where `/proc/cpuinfo` is the build host's), not by a failing lookup at
 runtime. Already-shipped images need re-stamping, not just an install-time guard. With
 no `host_addr`/`dev_addr` either, `u_ether` randomises the gadget MAC on every module
-load — seven distinct MACs across seven boots here.
+load. Seven distinct MACs across seven boots here.
 
 Earlier comments on
 [rpi-usb-gadget#27](https://github.com/raspberrypi/rpi-usb-gadget/issues/27) and
@@ -198,7 +197,7 @@ reason.
 
 ## What is in this repo
 
-The host-side workaround that *would* work if TX were alive — it replaces macOS
+The host-side workaround that *would* work if TX were alive. It replaces macOS
 Internet Sharing entirely, avoiding the `BRDGADD` bug, by hand-configuring the gateway
 address the Pi's ICS watcher probes for:
 
@@ -243,7 +242,7 @@ systemd.run=/boot/firmware/firstrun.sh systemd.unit=kernel-command-line.target
 It sampled `/sys/class/net/usb0/statistics` every 10s, snapshotted dmesg every 60s,
 wrote results back to the boot partition, and deleted itself.
 
-`systemd.unit=kernel-command-line.target` is **required** — without it `systemd.run`
+`systemd.unit=kernel-command-line.target` is **required**. Without it `systemd.run`
 generates a unit that never executes. Write incrementally with `sync`, or an early
 unplug loses everything buffered.
 
@@ -256,4 +255,4 @@ unplug loses everything buffered.
 | Gadget | [`rpi-usb-gadget`](https://github.com/raspberrypi/rpi-usb-gadget), `g_ether` → CDC ECM |
 
 Not tested on macOS 26 or earlier, on Intel Macs, or on other Pi models. If you have
-this working — or failing — on any of those, that is worth knowing.
+this working, or failing, on any of those, that is worth knowing.
