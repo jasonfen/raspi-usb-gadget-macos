@@ -39,6 +39,10 @@ Pi modes, for reference:
 
 ## PROVEN: the Pi never sees the packets, and it is not at fault
 
+> **Filed with Apple as [FB24614121](https://feedbackassistant.apple.com/feedback/24614121)**
+> (2026-09-01, macOS 27.0 beta 26A5421a). Draft and evidence list in
+> `apple-feedback.md`.
+
 Round-2 diagnostic, 360s, with `dr_mode = peripheral` read directly from the device
 tree (`/proc/device-tree/soc/usb@7e980000/dr_mode`), and with the Mac holding both
 addresses, both on-link routes, and pinging continuously throughout.
