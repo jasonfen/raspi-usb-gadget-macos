@@ -3,8 +3,8 @@
 # Brings up the gateway and starts the ARP responder BEFORE the Pi's first
 # probe, so its watcher picks client mode instead of falling back to shared.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-BASE=/Users/jason/Documents/projects/raspi
-LOG="$BASE/responder.log"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
+LOG="$REPO/evidence/host/responder.log"
 
 pkill -f arp-responder.py 2>/dev/null
 
@@ -16,7 +16,7 @@ for t in $(seq 0 3 150); do
   printf "."; sleep 3
 done
 [ -z "$INT" ] && { echo ""; echo "interface never appeared"; exit 1; }
-echo "$INT" > "$BASE/.gadget-if"
+echo "$INT" > "$REPO/.gadget-if"
 
 echo "==> addresses"
 ifconfig "$INT" -tso 2>/dev/null
@@ -32,7 +32,7 @@ killall bootpd 2>/dev/null
 echo "    forwarding=$(sysctl -n net.inet.ip.forwarding)  nat=$(pfctl -a pi-nat -s nat 2>/dev/null | grep -c 'nat on')"
 
 echo "==> ARP responder (must be up before the Pi's first probe)"
-python3 "$BASE/arp-responder.py" "$INT" 192.168.2.1 > "$LOG" 2>&1 &
+python3 "$REPO/setup/arp-responder.py" "$INT" 192.168.2.1 > "$LOG" 2>&1 &
 RPID=$!
 sleep 2
 kill -0 "$RPID" 2>/dev/null || { echo "    FAILED:"; cat "$LOG" | sed 's/^/      /'; exit 1; }

@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Capture what the Pi is actually putting on the wire.
 # NOTE: macOS has no `timeout` command -- use background + kill instead.
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
 SECS="${1:-20}"
-OUT=/Users/jason/Documents/projects/raspi/capture.txt
+OUT="$REPO"/evidence/host/capture.txt
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "must run as root (tcpdump needs /dev/bpf)"; exit 1

@@ -1,6 +1,7 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Run this FIRST, always. A wedged TX voids every test that needs to send.
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
 ifconfig "$INT" >/dev/null 2>&1 || { echo "$INT does not exist -- replug the Pi"; exit 2; }
 A=$(netstat -I "$INT" -b 2>/dev/null | awk 'NR==2{print $8}')
 ping -c3 -W600 192.168.2.99 >/dev/null 2>&1

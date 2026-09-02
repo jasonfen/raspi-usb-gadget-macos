@@ -50,7 +50,7 @@ Pi modes, for reference:
 
 > **Filed with Apple as [FB24614121](https://feedbackassistant.apple.com/feedback/24614121)**
 > (2026-09-01, macOS 27.0 beta 26A5421a). Draft and evidence list in
-> `apple-feedback.md`.
+> `apple/apple-feedback.md`.
 
 Round-2 diagnostic, 360s, with `dr_mode = peripheral` read directly from the device
 tree (`/proc/device-tree/soc/usb@7e980000/dr_mode`), and with the Mac holding both
@@ -224,7 +224,7 @@ and `/proc/interrupts` IRQ 51 counts across the wedge. If the dwc2 interrupt cou
 keeps climbing while `rx_packets` is flat, this is a software requeue bug in `u_ether`;
 if it stalls, the controller itself has halted the endpoint.
 
-Evidence: `diag3-peripheral.txt`.
+Evidence: `evidence/device/diag3-peripheral.txt`.
 
 ## ROOT CAUSE: the Mac never puts a frame on the wire (2026-09-01)
 
@@ -247,7 +247,7 @@ All five are inbound from the Pi. Zero outbound, including the `arp-responder.py
 BPF injections, which logged 111 replies sent over the same window. BPF writes do not
 reach the wire either.
 
-Paired counters over 400s (`hostside.txt` + `diag2.txt`):
+Paired counters over 400s (`evidence/host/hostside.txt` + `evidence/device/diag2.txt`):
 
 | | host (en7) | device (usb0) |
 |---|---|---|
@@ -269,7 +269,7 @@ at all. Same capture, same script, against Wi-Fi as a control:
 
 BPF outbound visibility works here. The zero on `en7` is real.
 
-Evidence: `bpf_en0.cap`, `bpf_en7.cap`.
+Evidence: `evidence/host/bpf_en0.cap`, `evidence/host/bpf_en7.cap`.
 
 ### Not a null MAC (theory tried and dropped)
 
@@ -356,7 +356,7 @@ is exactly why this went unnoticed for the whole investigation.
 
 Fixed on the card: `[all]` now carries `dtoverlay=dwc2,dr_mode=peripheral`, the
 comment is restored, and the file ends with a newline. Backup in
-`boot-backup/config.txt.pre-drmode-fix`.
+`backup/device/config.txt.pre-drmode-fix`.
 
 **Filed upstream as [rpi-usb-gadget#32](https://github.com/raspberrypi/rpi-usb-gadget/issues/32).**
 The installer appends to `config.txt` without a newline guard and without forcing an
@@ -534,20 +534,20 @@ Things that do NOT fix it:
 - `net.link.ether.inet.proxyall=1`: untested on purpose. It is global, and on a
   corporate LAN it can make this Mac answer ARP for addresses it shouldn't. Don't.
 
-What works: `arp-responder.py` opens a BPF device and emits the reply itself,
+What works: `setup/arp-responder.py` opens a BPF device and emits the reply itself,
 bypassing the kernel's subnet check. Pure stdlib. Confirmed sending replies the Pi
 accepts at layer 2.
 
 **Open issue:** the Pi receives the replies but does not flip to client mode when it
 has already booted into shared mode. The responder must be running *before* the Pi's
-first probe, hence `full-setup.sh`, which is run right after a replug.
+first probe, hence `setup/full-setup.sh`, which is run right after a replug.
 
 ## Usage
 
 Replug the Pi, then immediately:
 
 ```sh
-sudo ./full-setup.sh      # waits for the interface, configures everything,
+sudo ./setup/full-setup.sh   # waits for the interface, configures everything,
                           # starts the ARP responder before the Pi's first probe
 ```
 
@@ -556,32 +556,34 @@ That is the whole flow. The others are diagnostics:
 Session-9 diagnostics (the ones that actually settled it):
 
 ```sh
-sudo ./addr-and-route.sh  # apply addresses, prove the on-link routes exist, drive traffic
-sudo ./tx-probe.sh        # does anything leave the interface? separates dead TX from a lying Opkts
-sudo ./bpf-control.sh     # CONTROL: can tcpdump see outbound here at all? run before believing tx-probe
-./host-watch.sh           # 400s host-side counter log, pairs with the Pi's diag4.txt
-./read-diag4.sh           # pull and summarise diag4.txt from a mounted boot partition
-sudo ./mac-force.sh       # dead end, kept as a record: forcing the MAC changes nothing
+sudo ./diagnostics/addr-and-route.sh  # apply addresses, prove the on-link routes exist, drive traffic
+sudo ./diagnostics/tx-probe.sh        # does anything leave the interface? separates dead TX from a lying Opkts
+sudo ./diagnostics/bpf-control.sh     # CONTROL: can tcpdump see outbound here at all? run before believing tx-probe
+./diagnostics/host-watch.sh           # 400s host-side counter log, pairs with diag4.txt
+./device/read-diag4.sh                # pull and summarise diag4.txt from a mounted boot partition
+sudo ./superseded/mac-force.sh        # dead end, kept as a record: forcing the MAC changes nothing
 ```
 
-Each writes its output next to itself, so the repo can be moved without editing paths.
+Each resolves paths from its own location and writes output into `evidence/host/`, so
+the repo can be moved or cloned anywhere.
 
 ```sh
-sudo ./capture.sh 20      # what is actually on the wire (start here when stuck)
-sudo ./check-gadget.sh    # is the gadget enumerated with real interfaces?
-sudo ./verify-pi.sh       # lease / ARP / NAT state
-sudo ./run-responder.sh   # responder only, against an already-configured link
-./gadget-snapshot.sh      # one-shot USB state, for before/after comparisons
+sudo ./diagnostics/capture.sh 20      # what is actually on the wire (start here when stuck)
+sudo ./diagnostics/check-gadget.sh    # is the gadget enumerated with real interfaces?
+sudo ./diagnostics/verify-pi.sh       # lease / ARP / NAT state
+sudo ./setup/run-responder.sh         # responder only, against an already-configured link
+./diagnostics/gadget-snapshot.sh      # one-shot USB state, for before/after comparisons
 ```
 
-Scripts share the detected interface name via `.gadget-if`.
+Scripts share the detected interface name via `.gadget-if` at the repo root.
 
-`ics-emulate.sh` and `fresh-start.sh` are superseded by `full-setup.sh`;
-`unwedge-tx.sh` and `proxy-arp.sh` are dead ends kept only as a record of what failed.
+`superseded/` holds `ics-emulate.sh` and `fresh-start.sh`, replaced by
+`setup/full-setup.sh`, plus `unwedge-tx.sh` and `proxy-arp.sh`, dead ends kept only as
+a record of what failed.
 
 ## Gotchas
 
-**`arp-responder.py` dies silently on replug, and used to spin at 100% CPU.** Its BPF
+**`setup/arp-responder.py` dies silently on replug, and used to spin at 100% CPU.** Its BPF
 fd is bound to one interface *instance*. A replug destroys that instance, every
 subsequent `os.read` fails immediately, and the original `except OSError: continue`
 turned that into a busy loop. Found one burning a full core for an hour, its log frozen
@@ -591,7 +593,7 @@ replies are still being sent.
 
 
 **Nothing here survives a reboot.** `ip.forwarding` resets and pf won't auto-load
-`/etc/pf-pi.conf`. Re-run `ics-emulate.sh`. (`/etc/bootpd.plist` does persist.)
+`/etc/pf-pi.conf`. Re-run `setup/full-setup.sh`. (`/etc/bootpd.plist` does persist.)
 
 **The interface name is not stable.** It was `en7`, but re-enumeration can change it.
 The scripts auto-detect via `networksetup -listallhardwareports`.
@@ -621,7 +623,7 @@ A healthy device shows the full chain: `CDC Ethernet Control Model (ECM)` ->
 exists; trust that over any registry count.
 
 **The Pi takes ~57s after replug to appear on the bus.** Snapshotting sooner reports
-"NOT ON BUS" and means nothing. Use `watch-gadget.sh`, which polls instead of guessing.
+"NOT ON BUS" and means nothing. Use `diagnostics/watch-gadget.sh`, which polls instead of guessing.
 
 **macOS has no `timeout` command.** Not in base, not via coreutils here. Any
 `timeout N cmd` silently fails with "command not found" and produces empty output that
@@ -632,7 +634,7 @@ sweep in this repo. Use background + kill instead:
 cmd > out 2>&1 & P=$!; sleep N; kill $P 2>/dev/null; wait $P 2>/dev/null
 ```
 
-Never let a diagnostic's failure to run look like a finding. `capture.sh` now checks
+Never let a diagnostic's failure to run look like a finding. `diagnostics/capture.sh` now checks
 for tcpdump errors explicitly and distinguishes them from a silent wire.
 
 ## Diagnosing
@@ -657,7 +659,7 @@ driver. Check the address before concluding the hardware is broken.
 ```sh
 sudo pfctl -f /etc/pf.conf                 # drop the NAT ruleset
 sudo sysctl -w net.inet.ip.forwarding=0
-sudo cp backup/bootpd.plist.pre-ics /etc/bootpd.plist
+sudo cp backup/host/bootpd.plist.pre-ics /etc/bootpd.plist
 sudo networksetup -setdhcp "Raspberry Pi USB Gadget"
 ```
 

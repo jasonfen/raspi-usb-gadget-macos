@@ -1,6 +1,6 @@
 #!/bin/bash
-R="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-L="$R"/hostside.txt
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
+L="$REPO"/evidence/host/hostside.txt
 : > "$L"
 echo "===== host-side counters, en7, $(date -u) =====" >> "$L"
 echo "paired with device-side diag2.txt from the dr_mode=peripheral retest" >> "$L"

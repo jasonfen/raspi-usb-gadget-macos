@@ -1,9 +1,9 @@
 #!/bin/bash
-R="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Applies the gadget addresses, then checks whether macOS actually installs
 # on-link routes for them. No route = every packet leaves via en0 and the Pi
 # never sees anything, with no USB fault involved at all.
-OUT="$R"/routecheck.txt
+OUT="$REPO"/evidence/host/routecheck.txt
 : > "$OUT"; exec > >(tee -a "$OUT") 2>&1
 IF=en7
 echo "=== before ==="

@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # The Pi probes: "who-has 192.168.2.1 tell 10.12.194.1".
 # macOS won't answer -- sender is on a different subnet than the target.
 # Publish an ARP entry so we reply anyway, which is all the ICS watcher needs.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
-OUT=/Users/jason/Documents/projects/raspi/proxy-capture.txt
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
+OUT="$REPO"/evidence/host/proxy-capture.txt
 
 MAC=$(ifconfig "$INT" | awk '/ether/{print $2}')
 echo "=== $INT mac: $MAC ==="

@@ -1,5 +1,10 @@
 # transient runtime state
 .gadget-if
 
+# transient capture artefacts (the committed bpf_en*.cap are the kept ones)
+evidence/host/*.err
+evidence/host/txprobe.cap
+evidence/host/macfix.cap
+
 # derived: bundle of files already tracked individually
-apple-feedback-evidence.tar.gz
+evidence/apple-feedback-evidence.tar.gz

@@ -1,7 +1,8 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # The Pi is probably still in shared mode at 10.12.194.1/28.
 # Join that subnet as a second address so we can reach it and get a shell.
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
 
 echo "=== what is the Pi actually sending? (8s capture) ==="
 tcpdump -i "$INT" -n -l > /tmp/_cap.$$ 2>&1 & P=$!; sleep 8; kill $P 2>/dev/null; wait $P 2>/dev/null

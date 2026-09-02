@@ -1,9 +1,9 @@
 #!/bin/bash
 # Start the ARP responder and watch for the Pi to flip to client mode.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-BASE=/Users/jason/Documents/projects/raspi
-INT=$(cat "$BASE/.gadget-if" 2>/dev/null || echo en7)
-LOG="$BASE/responder.log"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null || echo en7)
+LOG="$REPO/evidence/host/responder.log"
 
 pkill -f arp-responder.py 2>/dev/null
 sleep 1
@@ -16,7 +16,7 @@ pfctl -a pi-nat -s nat 2>/dev/null | grep -v ALTQ | sed 's/^/  /'
 
 echo ""
 echo "=== starting responder on $INT ==="
-python3 "$BASE/arp-responder.py" "$INT" 192.168.2.1 > "$LOG" 2>&1 &
+python3 "$REPO/setup/arp-responder.py" "$INT" 192.168.2.1 > "$LOG" 2>&1 &
 RPID=$!
 sleep 3
 if ! kill -0 "$RPID" 2>/dev/null; then

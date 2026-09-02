@@ -1,6 +1,7 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Did the Pi flip to client mode and pick up a lease?
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
 echo "(gadget interface: $INT)"
 
 echo ""

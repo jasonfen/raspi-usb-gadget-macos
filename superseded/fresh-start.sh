@@ -3,7 +3,7 @@
 # Disables offloads BEFORE the TX ring has a chance to wedge, then watches
 # whether Opkts can get past the ~161 plateau.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-BASE=/Users/jason/Documents/projects/raspi
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 
 echo "waiting for the gadget interface (up to 120s) ..."
 INT=""
@@ -14,7 +14,7 @@ for t in $(seq 0 3 120); do
   sleep 3
 done
 [ -z "$INT" ] && { echo ""; echo "never appeared"; exit 1; }
-echo "$INT" > "$BASE/.gadget-if"
+echo "$INT" > "$REPO/.gadget-if"
 
 echo ""
 echo "=== disabling offloads FIRST (before any traffic) ==="

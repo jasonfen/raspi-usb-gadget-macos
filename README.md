@@ -202,7 +202,7 @@ Internet Sharing entirely, avoiding the `BRDGADD` bug, by hand-configuring the g
 address the Pi's ICS watcher probes for:
 
 ```sh
-sudo ./full-setup.sh    # run immediately after a replug
+sudo ./setup/full-setup.sh    # run immediately after a replug
 ```
 
 It applies `192.168.2.1/24` to the gadget interface, scopes `bootpd` to it for DHCP,
@@ -210,21 +210,37 @@ enables IP forwarding, loads a pf NAT anchor, and starts a userspace ARP respond
 before the Pi's first probe. No bridge anywhere. This is correct and complete, and it
 still cannot deliver a packet, because of the bug above.
 
-The diagnostics, roughly in the order they earned their keep:
+The diagnostics, in `diagnostics/`, roughly in the order they earned their keep:
 
 | script | what it answers |
 |---|---|
-| `bpf-control.sh` | **run first.** Can tcpdump see outbound frames on this Mac at all? |
-| `tx-probe.sh` | Does anything leave the interface? Separates dead TX from a lying `Opkts` |
-| `addr-and-route.sh` | Apply addresses, prove on-link routes exist, drive traffic |
-| `host-watch.sh` | 400s host-side counter log, pairs with the Pi's `diag4.txt` |
-| `capture.sh 20` | What is actually on the wire |
-| `check-gadget.sh` | Is the gadget enumerated with real USB interfaces? |
-| `firstrun.sh` | Device-side sampler for a Pi with no working shell (see below) |
+| `diagnostics/tx-check.sh` | **run first, always.** Is TX alive? A wedge voids every send-test |
+| `diagnostics/bpf-control.sh` | Can tcpdump see outbound frames on this Mac at all? |
+| `diagnostics/tx-probe.sh` | Does anything leave the interface? Separates dead TX from a lying `Opkts` |
+| `diagnostics/addr-and-route.sh` | Apply addresses, prove on-link routes exist, drive traffic |
+| `diagnostics/host-watch.sh` | 400s host-side counter log, pairs with the Pi's `diag4.txt` |
+| `diagnostics/capture.sh 20` | What is actually on the wire |
+| `diagnostics/check-gadget.sh` | Is the gadget enumerated with real USB interfaces? |
+| `device/firstrun.sh` | Device-side sampler for a Pi with no working shell (see below) |
 
-Raw evidence: `diag*.txt` (device side), `hostside.txt`, `bpf_en0.cap` / `bpf_en7.cap`
-(the capture control pair), `responder.log`, `apple-feedback.md` (the Apple report and
-its evidence list).
+Layout:
+
+| directory | contents |
+|---|---|
+| `setup/` | the working host-side workaround: `full-setup.sh`, `run-responder.sh`, `arp-responder.py` |
+| `diagnostics/` | host-side probes, listed above |
+| `device/` | Pi-side and SD-card-side: the boot-partition sampler, its installer, the readers |
+| `evidence/device/` | what the Pi recorded: `diag.txt`, `diag2.txt`, `diag3-peripheral.txt`, `diag4.txt` |
+| `evidence/host/` | what the Mac recorded: `hostside.txt`, `responder.log`, `bpf_en0.cap` / `bpf_en7.cap` (the capture control pair) |
+| `apple/` | the Apple report (`apple-feedback.md`) and `prep-sysdiagnose.sh`, which puts the Mac in the wedged state a sysdiagnose needs to capture |
+| `upstream/` | text filed with, and withdrawn from, `rpi-usb-gadget` |
+| `backup/host/` | macOS config replaced by the workaround: `bootpd.plist`, `pf.conf` |
+| `backup/device/` | SD-card boot partition originals, including `config.txt.pre-drmode-fix` |
+| `superseded/` | dead ends and replaced setup scripts, kept as a record of what failed |
+
+Scripts resolve paths from their own location, so the repo can be moved or cloned
+anywhere. They share the detected interface name through `.gadget-if` at the repo root,
+and write their output into `evidence/host/`.
 
 The full chronological notebook, including every theory that turned out to be wrong and
 why, is in **[`INVESTIGATION.md`](INVESTIGATION.md)**.

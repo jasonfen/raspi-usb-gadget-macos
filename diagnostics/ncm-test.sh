@@ -4,7 +4,7 @@
 #   2. does TX get past the 161-packet wedge?
 #   3. take a DHCP lease from the Pi's shared-mode server and SSH in.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-BASE=/Users/jason/Documents/projects/raspi
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 
 pkill -f arp-responder.py 2>/dev/null
 
@@ -17,7 +17,7 @@ for t in $(seq 0 3 150); do
 done
 [ -z "$INT" ] && { echo ""; echo "interface never appeared -- is g_ncm present in the kernel?"; \
                    echo "if not, the Pi falls back to g_ether and should still enumerate."; exit 1; }
-echo "$INT" > "$BASE/.gadget-if"
+echo "$INT" > "$REPO/.gadget-if"
 
 echo ""
 echo "=== which driver is handling it? ==="

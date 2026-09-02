@@ -1,7 +1,8 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # TX on the gadget interface stops after ~161 packets. Try to unwedge it.
 # Tests, in order: baseline -> interface bounce -> disable offloads -> MTU drop.
-INT=$(cat /Users/jason/Documents/projects/raspi/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
 
 opkts() { netstat -I "$INT" -b 2>/dev/null | awk 'NR==2{print $8}'; }

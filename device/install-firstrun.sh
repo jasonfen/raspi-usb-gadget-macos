@@ -2,7 +2,7 @@
 # Install the one-shot diagnostic onto the SD card's boot partition.
 # Run with the card mounted on the Mac.
 set -u
-BASE=/Users/jason/Documents/projects/raspi
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 B=/Volumes/bootfs
 
 [ -d "$B" ] || { echo "bootfs not mounted -- insert the SD card"; exit 1; }
@@ -11,15 +11,15 @@ echo "=== current cmdline.txt ==="
 cat "$B/cmdline.txt"
 
 # always restore from the pristine backup, so repeated runs don't stack params
-if [ -f "$BASE/boot-backup/cmdline.txt.orig" ]; then
-  ORIG=$(tr -d '\n' < "$BASE/boot-backup/cmdline.txt.orig")
+if [ -f "$REPO/backup/device/cmdline.txt.orig" ]; then
+  ORIG=$(tr -d '\n' < "$REPO/backup/device/cmdline.txt.orig")
 else
   ORIG=$(tr -d '\n' < "$B/cmdline.txt")
 fi
 
 echo ""
 echo "=== installing firstrun.sh ==="
-cp "$BASE/firstrun.sh" "$B/firstrun.sh" || exit 1
+cp "$REPO/device/firstrun.sh" "$B/firstrun.sh" || exit 1
 chmod 755 "$B/firstrun.sh" 2>/dev/null
 ls -l "$B/firstrun.sh"
 

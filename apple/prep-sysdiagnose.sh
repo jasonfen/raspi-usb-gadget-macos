@@ -1,10 +1,10 @@
 #!/bin/bash
-R="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Post-boot runbook: wait for the gadget, address it, drive traffic until TX
 # wedges, and confirm the wedge -- so the sysdiagnose is taken in the state
 # Apple needs. A capture taken before the wedge is worthless.
 [ "$(id -u)" -ne 0 ] && { echo "run as root: sudo $0"; exit 1; }
-OUT="$R"/sysdiagnose-prep.txt
+OUT="$REPO"/evidence/host/sysdiagnose-prep.txt
 : > "$OUT"; exec > >(tee -a "$OUT") 2>&1
 
 echo "=== 1. waiting for the gadget interface (up to 150s) ==="
@@ -15,7 +15,7 @@ for t in $(seq 0 3 150); do
   printf "."; sleep 3
 done
 [ -z "$INT" ] && { echo; echo "interface never appeared. Replug the cable (USB port, not PWR)."; exit 1; }
-echo "$INT" > "$R"/.gadget-if
+echo "$INT" > "$REPO"/.gadget-if
 
 echo
 echo "=== 2. applying addresses ==="

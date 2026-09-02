@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Emulate macOS Internet Connection Sharing for the rpi-usb-gadget ICS watcher.
 # Presents 192.168.2.1 so the Pi flips to "USB Gadget (client)" on its own.
 # No bridge involved -> the BRDGADD kernel timeout never comes into play.
 set -u
 
-B=/Users/jason/Documents/projects/raspi/backup
+B="$REPO"/backup/host
 mkdir -p "$B"
 EXT=en0
 LAN=192.168.2.0/24
@@ -120,7 +121,7 @@ PFCONF
 pfctl -f /etc/pf-pi.conf 2>&1 | grep -viE "altq|could result" || true
 pfctl -e 2>&1 | grep -viE "altq" || true
 
-echo "$INT" > /Users/jason/Documents/projects/raspi/.gadget-if
+echo "$INT" > $REPO/.gadget-if
 
 echo ""
 echo "===================== RESULTS ====================="
