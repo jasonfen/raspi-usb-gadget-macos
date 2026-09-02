@@ -1,4 +1,11 @@
-# Apple Feedback Assistant — draft
+# Apple Feedback Assistant — SUBMITTED 2026-09-01
+
+> Filed against macOS 27.0 beta (26A5421a). Sysdiagnose attached from
+> `/var/tmp/sysdiagnose_2026.09.01_19-54-00-0400_macOS_Mac_26A5421a.tar.gz`,
+> captured while the interface was wedged, plus `apple-feedback-evidence.tar.gz`.
+>
+> **TODO: record the FB number here** once Feedback Assistant assigns it, so the
+> rpi-usb-gadget withdrawal comments can point at it.
 
 **Area:** macOS → Networking (also relevant: USB, DriverKit)
 **Type:** Incorrect/Unexpected Behavior
