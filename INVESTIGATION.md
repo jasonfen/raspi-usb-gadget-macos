@@ -575,7 +575,9 @@ sudo ./setup/run-responder.sh         # responder only, against an already-confi
 ./diagnostics/gadget-snapshot.sh      # one-shot USB state, for before/after comparisons
 ```
 
-Scripts share the detected interface name via `.gadget-if` at the repo root.
+Scripts detect the gadget interface via `.gadget-if` at the repo root, falling back to
+`networksetup`. SD-card scripts find the boot partition by content, overridable with
+`BOOTFS=/path`.
 
 `superseded/` holds `ics-emulate.sh` and `fresh-start.sh`, replaced by
 `setup/full-setup.sh`, plus `unwedge-tx.sh` and `proxy-arp.sh`, dead ends kept only as

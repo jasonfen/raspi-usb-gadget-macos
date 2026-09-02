@@ -184,7 +184,13 @@ Run this on the Mac with the Pi plugged in. It is the control that voids every o
 test, and it takes five seconds:
 
 ```sh
-IF=en7   # or whatever your gadget interface is
+./diagnostics/tx-check.sh
+```
+
+Or inline, if you would rather not run something from a stranger's repo:
+
+```sh
+IF=$(networksetup -listallhardwareports | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 A=$(netstat -I $IF -b | awk 'NR==2{print $8}')
 ping -c3 192.168.2.99 >/dev/null 2>&1; sleep 2
 B=$(netstat -I $IF -b | awk 'NR==2{print $8}')
@@ -239,8 +245,9 @@ Layout:
 | `superseded/` | dead ends and replaced setup scripts, kept as a record of what failed |
 
 Scripts resolve paths from their own location, so the repo can be moved or cloned
-anywhere. They share the detected interface name through `.gadget-if` at the repo root,
-and write their output into `evidence/host/`.
+anywhere. They detect the gadget interface through `.gadget-if` at the repo root, falling back to
+`networksetup`, and write their output into `evidence/host/`. No script contains an
+absolute path or a fixed interface name.
 
 The full chronological notebook, including every theory that turned out to be wrong and
 why, is in **[`INVESTIGATION.md`](INVESTIGATION.md)**.
@@ -257,6 +264,11 @@ systemd.run=/boot/firmware/firstrun.sh systemd.unit=kernel-command-line.target
 
 It sampled `/sys/class/net/usb0/statistics` every 10s, snapshotted dmesg every 60s,
 wrote results back to the boot partition, and deleted itself.
+
+`device/install-firstrun.sh` writes it to the card and `device/read-diag.sh` reads the
+results back. Both locate the boot partition by looking for the mounted volume holding
+`config.txt` and `cmdline.txt`, so the volume name does not matter; set `BOOTFS=/path`
+to override.
 
 `systemd.unit=kernel-command-line.target` is **required**. Without it `systemd.run`
 generates a unit that never executes. Write incrementally with `sync`, or an early

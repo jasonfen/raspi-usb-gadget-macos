@@ -2,7 +2,8 @@
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # TX on the gadget interface stops after ~161 packets. Try to unwedge it.
 # Tests, in order: baseline -> interface bounce -> disable offloads -> MTU drop.
-INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
 
 opkts() { netstat -I "$INT" -b 2>/dev/null | awk 'NR==2{print $8}'; }
@@ -34,7 +35,7 @@ echo "=== TEST 2: bounce the interface (resets TX ring) ==="
 ifconfig "$INT" down; sleep 3; ifconfig "$INT" up; sleep 4
 readdr
 ifconfig "$INT" | grep -E "inet |status"
-probe && { echo "    >>> RECOVERED via bounce"; echo "bounce" > /tmp/pi-tx-fix; exit 0; } || echo "    still wedged"
+probe && { echo "    >>> RECOVERED via bounce"; echo "bounce" > "$REPO/evidence/host/tx-recovery.txt"; exit 0; } || echo "    still wedged"
 
 echo ""
 echo "=== TEST 3: disable TSO / offloads ==="
@@ -43,13 +44,13 @@ for opt in -tso4 -tso6 -tso -lro -rxcsum -txcsum; do
 done
 ifconfig "$INT" | grep options
 readdr
-probe && { echo "    >>> RECOVERED by disabling offloads"; echo "offloads" > /tmp/pi-tx-fix; exit 0; } || echo "    still wedged"
+probe && { echo "    >>> RECOVERED by disabling offloads"; echo "offloads" > "$REPO/evidence/host/tx-recovery.txt"; exit 0; } || echo "    still wedged"
 
 echo ""
 echo "=== TEST 4: drop MTU to 1000 ==="
 ifconfig "$INT" mtu 1000 2>/dev/null && echo "    mtu set" || echo "    mtu change rejected"
 readdr
-probe && { echo "    >>> RECOVERED at lower MTU"; echo "mtu" > /tmp/pi-tx-fix; exit 0; } || echo "    still wedged"
+probe && { echo "    >>> RECOVERED at lower MTU"; echo "mtu" > "$REPO/evidence/host/tx-recovery.txt"; exit 0; } || echo "    still wedged"
 
 echo ""
 echo "==============================================="

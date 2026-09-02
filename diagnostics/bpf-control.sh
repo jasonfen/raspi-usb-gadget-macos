@@ -1,13 +1,16 @@
 #!/bin/bash
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
+EXT=${UPLINK:-$(route -n get default 2>/dev/null | awk '/interface:/{print $2}')}
 # Can tcpdump on THIS Mac see outbound frames at all?
-# If en0 also shows zero outbound, "en7 emits nothing" is an instrument
+# If the uplink also shows zero outbound, "the gadget emits nothing" is an instrument
 # artifact of Skywalk BPF, not a finding. Control before conclusion.
 OUT="$REPO"/evidence/host/bpfcheck.txt
 : > "$OUT"
 exec > >(tee -a "$OUT") 2>&1
 
-for IF in en0 en7; do
+for IF in "$EXT" "$INT"; do
   MAC=$(ifconfig $IF 2>/dev/null | awk '/ether/{print $2}')
   [ -z "$MAC" ] && { echo "$IF: no MAC, skipping"; continue; }
   # tcpdump prints MACs without leading zeros in each octet
@@ -17,7 +20,7 @@ for IF in en0 en7; do
   P=$!
   sleep 3
   if ! kill -0 $P 2>/dev/null; then echo "  tcpdump died:"; cat "$REPO"/evidence/host/bpf_$IF.err; continue; fi
-  if [ "$IF" = "en0" ]; then
+  if [ "$IF" = "$EXT" ]; then
     ping -c4 -t1 1.1.1.1 >/dev/null 2>&1
     dig +short +time=1 +tries=1 apple.com >/dev/null 2>&1
   else
@@ -33,6 +36,6 @@ for IF in en0 en7; do
 done
 echo ""
 echo "INTERPRETATION:"
-echo "  en0 outbound > 0 and en7 outbound = 0  -> en7 TX really is dead"
+echo "  $EXT outbound > 0 and $INT outbound = 0  -> $INT TX really is dead"
 echo "  both 0                                 -> BPF cannot see outbound here;"
 echo "                                            every 'nothing sent' claim is void"

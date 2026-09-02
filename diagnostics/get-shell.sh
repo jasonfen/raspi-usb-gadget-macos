@@ -3,8 +3,9 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Packet-frugal: TX budget is ~161 per enumeration. Spend it on reaching the Pi.
 # Capture (free, RX only) runs alongside to reveal the Pi's state.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
-CAP=/tmp/_shell_cap.txt
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
+CAP=$(mktemp -t shellcap); trap 'rm -f "$CAP"' EXIT
 
 budget() { echo "  [Opkts=$(netstat -I "$INT" -b 2>/dev/null | awk 'NR==2{print $8}') / 161]"; }
 

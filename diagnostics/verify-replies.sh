@@ -3,8 +3,9 @@
 # The responder logging a write only proves os.write() returned.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
-INT=$(cat "$REPO/.gadget-if" 2>/dev/null || echo en7)
-OUT=/tmp/_verify_arp.txt
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
+OUT=$(mktemp -t verifyarp); trap 'rm -f "$OUT"' EXIT
 
 pgrep -f arp-responder.py >/dev/null || { echo "responder NOT running -- start full-setup.sh first"; exit 1; }
 echo "responder pid: $(pgrep -f arp-responder.py)"

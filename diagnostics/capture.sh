@@ -2,7 +2,8 @@
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Capture what the Pi is actually putting on the wire.
 # NOTE: macOS has no `timeout` command -- use background + kill instead.
-INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 SECS="${1:-20}"
 OUT="$REPO"/evidence/host/capture.txt
 

@@ -12,7 +12,22 @@ bypassing the kernel's subnet check. Pure stdlib -- no scapy, no install.
 """
 import fcntl, os, struct, socket, sys, time
 
-IFACE  = sys.argv[1] if len(sys.argv) > 1 else "en7"
+def _gadget_iface():
+    """Interface from .gadget-if at the repo root, else ask networksetup."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        v = open(os.path.join(root, ".gadget-if")).read().strip()
+        if v:
+            return v
+    except OSError:
+        pass
+    out = os.popen("networksetup -listallhardwareports 2>/dev/null").read().split("\n")
+    for i, line in enumerate(out):
+        if "Raspberry Pi USB Gadget" in line and i + 1 < len(out):
+            return out[i + 1].split()[-1]
+    sys.exit("no gadget interface found; pass one as the first argument")
+
+IFACE  = sys.argv[1] if len(sys.argv) > 1 else _gadget_iface()
 TARGET = sys.argv[2] if len(sys.argv) > 2 else "192.168.2.1"
 
 # macOS net/bpf.h ioctls

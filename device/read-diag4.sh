@@ -1,6 +1,13 @@
 #!/bin/bash
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
-B=/Volumes/bootfs
+# Pi boot partition: override with BOOTFS=..., else find the mounted FAT volume
+# that carries both config.txt and cmdline.txt.
+B="${BOOTFS:-}"
+if [ -z "$B" ]; then
+  for c in /Volumes/*; do
+    [ -f "$c/config.txt" ] && [ -f "$c/cmdline.txt" ] && { B="$c"; break; }
+  done
+fi
 [ -f "$B/diag4.txt" ] || { echo "diag4.txt ABSENT"; ls -la $B/ | grep -iE "diag|stage1|pcap|cmdline"; exit 1; }
 cp "$B/diag4.txt" "$REPO/evidence/device/diag4.txt"
 [ -f "$B/usb0.pcap" ] && cp "$B/usb0.pcap" "$REPO/evidence/device/usb0.pcap"

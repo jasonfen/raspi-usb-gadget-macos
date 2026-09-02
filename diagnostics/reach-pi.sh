@@ -1,12 +1,14 @@
 #!/bin/bash
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
+TMPF=$(mktemp -t pidiag); trap 'rm -f "$TMPF"' EXIT
 # The Pi is probably still in shared mode at 10.12.194.1/28.
 # Join that subnet as a second address so we can reach it and get a shell.
-INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 
 echo "=== what is the Pi actually sending? (8s capture) ==="
-tcpdump -i "$INT" -n -l > /tmp/_cap.$$ 2>&1 & P=$!; sleep 8; kill $P 2>/dev/null; wait $P 2>/dev/null
-head -20 /tmp/_cap.$$ | sed 's/^/  /'; [ -s /tmp/_cap.$$ ] || echo "  (wire silent)"; rm -f /tmp/_cap.$$
+tcpdump -i "$INT" -n -l > "$TMPF" 2>&1 & P=$!; sleep 8; kill $P 2>/dev/null; wait $P 2>/dev/null
+head -20 "$TMPF" | sed 's/^/  /'; [ -s "$TMPF" ] || echo "  (wire silent)"; rm -f "$TMPF"
 
 echo ""
 echo "=== adding 10.12.194.2/28 alias on $INT (shared-mode subnet) ==="
@@ -34,8 +36,8 @@ ipconfig getpacket "$INT" 2>&1 | head -12 | sed 's/^/  /'
 
 echo ""
 echo "=== mDNS sweep ==="
-dns-sd -B _ssh._tcp > /tmp/_mdns.$$ 2>&1 & P=$!; sleep 5; kill $P 2>/dev/null; wait $P 2>/dev/null
-head -8 /tmp/_mdns.$$ | sed 's/^/  /'; rm -f /tmp/_mdns.$$
+dns-sd -B _ssh._tcp > "$TMPF" 2>&1 & P=$!; sleep 5; kill $P 2>/dev/null; wait $P 2>/dev/null
+head -8 "$TMPF" | sed 's/^/  /'; rm -f "$TMPF"
 
 echo ""
 echo "NOTE: the 10.12.194.2 alias is temporary (gone on reboot / ifconfig delete)."

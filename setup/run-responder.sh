@@ -2,7 +2,8 @@
 # Start the ARP responder and watch for the Pi to flip to client mode.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
-INT=$(cat "$REPO/.gadget-if" 2>/dev/null || echo en7)
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 LOG="$REPO/evidence/host/responder.log"
 
 pkill -f arp-responder.py 2>/dev/null

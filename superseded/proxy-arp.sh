@@ -4,7 +4,8 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # macOS won't answer -- sender is on a different subnet than the target.
 # Publish an ARP entry so we reply anyway, which is all the ICS watcher needs.
 [ "$(id -u)" -ne 0 ] && { echo "run as root"; exit 1; }
-INT=$(cat $REPO/.gadget-if 2>/dev/null || echo en7)
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 OUT="$REPO"/evidence/host/proxy-capture.txt
 
 MAC=$(ifconfig "$INT" | awk '/ether/{print $2}')

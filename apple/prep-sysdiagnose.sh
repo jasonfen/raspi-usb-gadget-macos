@@ -25,7 +25,7 @@ sleep 2
 ifconfig "$INT" | grep -E "inet |ether|status" | sed 's/^/  /'
 
 echo
-echo "=== 3. on-link routes (must resolve to $INT, not en0) ==="
+echo "=== 3. on-link routes (must resolve to $INT, not the uplink) ==="
 netstat -rn -f inet | grep "$INT" | sed 's/^/  /'
 RI=$(route -n get 192.168.2.2 2>/dev/null | awk '/interface:/{print $2}')
 if [ "$RI" != "$INT" ]; then

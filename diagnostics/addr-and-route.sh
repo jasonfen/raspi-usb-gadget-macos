@@ -1,11 +1,12 @@
 #!/bin/bash
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 # Applies the gadget addresses, then checks whether macOS actually installs
-# on-link routes for them. No route = every packet leaves via en0 and the Pi
+# on-link routes for them. No route = every packet leaves via the uplink and the Pi
 # never sees anything, with no USB fault involved at all.
 OUT="$REPO"/evidence/host/routecheck.txt
 : > "$OUT"; exec > >(tee -a "$OUT") 2>&1
-IF=en7
+IF=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$IF" ] || IF=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
 echo "=== before ==="
 ifconfig $IF | grep -E "inet |ether"
 echo "routes via $IF: $(netstat -rn -f inet | grep -c $IF)"
@@ -21,9 +22,9 @@ echo
 echo "=== IPv4 routes via $IF ==="
 netstat -rn -f inet | grep $IF
 echo
-echo "=== does 192.168.2.2 route out $IF or out en0? ==="
+echo "=== does 192.168.2.2 route out $IF or out the uplink? ==="
 route -n get 192.168.2.2 2>&1 | grep -E "interface|gateway|destination"
-echo "=== does 10.12.194.1 route out $IF or out en0? ==="
+echo "=== does 10.12.194.1 route out $IF or out the uplink? ==="
 route -n get 10.12.194.1 2>&1 | grep -E "interface|gateway|destination"
 echo
 echo "VERDICT:"

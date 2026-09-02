@@ -7,7 +7,7 @@ set -u
 
 B="$REPO"/backup/host
 mkdir -p "$B"
-EXT=en0
+EXT=${UPLINK:-$(route -n get default 2>/dev/null | awk '/interface:/{print $2}')}
 LAN=192.168.2.0/24
 
 echo "==> 0. Locate the gadget interface"

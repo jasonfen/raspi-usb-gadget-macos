@@ -1,12 +1,14 @@
 #!/bin/bash
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
-# Does anything actually leave en7? Distinguishes a dead TX path from a lying Opkts.
+INT=$(cat "$REPO/.gadget-if" 2>/dev/null)
+[ -n "$INT" ] || INT=$(networksetup -listallhardwareports 2>/dev/null | awk '/Raspberry Pi USB Gadget/{getline; print $2}')
+# Does anything actually leave the gadget interface? Distinguishes a dead TX path from a lying Opkts.
 OUT="$REPO"/evidence/host/txprobe.txt
 : > "$OUT"
-A=$(netstat -I en7 -b | awk 'NR==2{print $8}')
+A=$(netstat -I "$INT" -b | awk 'NR==2{print $8}')
 echo "Opkts before: $A" | tee -a "$OUT"
 
-tcpdump -i en7 -n -e -c 40 > "$REPO"/evidence/host/txprobe.cap 2>"$REPO"/evidence/host/txprobe.err &
+tcpdump -i "$INT" -n -e -c 40 > "$REPO"/evidence/host/txprobe.cap 2>"$REPO"/evidence/host/txprobe.err &
 P=$!
 sleep 3
 if ! kill -0 $P 2>/dev/null; then
@@ -22,7 +24,7 @@ ping -c3 -t1 192.168.2.2    >/dev/null 2>&1   # forces a fresh ARP request
 sleep 6
 kill $P 2>/dev/null; wait $P 2>/dev/null
 
-B=$(netstat -I en7 -b | awk 'NR==2{print $8}')
+B=$(netstat -I "$INT" -b | awk 'NR==2{print $8}')
 {
   echo "Opkts after:  $B   (delta $((B-A)))"
   echo ""

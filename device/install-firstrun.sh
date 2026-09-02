@@ -3,7 +3,14 @@
 # Run with the card mounted on the Mac.
 set -u
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
-B=/Volumes/bootfs
+# Pi boot partition: override with BOOTFS=..., else find the mounted FAT volume
+# that carries both config.txt and cmdline.txt.
+B="${BOOTFS:-}"
+if [ -z "$B" ]; then
+  for c in /Volumes/*; do
+    [ -f "$c/config.txt" ] && [ -f "$c/cmdline.txt" ] && { B="$c"; break; }
+  done
+fi
 
 [ -d "$B" ] || { echo "bootfs not mounted -- insert the SD card"; exit 1; }
 
